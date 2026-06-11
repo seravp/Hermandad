@@ -1,5 +1,6 @@
 package com.hermandad.config;
 
+import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.exception.RecursoNoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,4 +52,17 @@ public class GlobalExceptionHandler {
 
         return error;
     }
+
+    @ExceptionHandler(CampoOrdenacionInvalidoException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleCampoOrdenacionInvalido(
+            CampoOrdenacionInvalidoException ex) {
+
+        Map<String, String> error = new HashMap<>();
+
+        error.put("error", ex.getMessage());
+
+        return error;
+    }
+
 }

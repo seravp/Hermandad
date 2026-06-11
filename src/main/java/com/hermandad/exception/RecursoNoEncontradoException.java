@@ -6,4 +6,7 @@ public class RecursoNoEncontradoException
     public RecursoNoEncontradoException(String mensaje) {
         super(mensaje);
     }
+
+
 }
+
