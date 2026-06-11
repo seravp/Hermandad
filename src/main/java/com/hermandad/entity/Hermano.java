@@ -3,8 +3,8 @@ package com.hermandad.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
-import com.hermandad.entity.EstadoHermano;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -49,7 +49,8 @@ public class Hermano {
 
     private LocalDateTime fechaModificacion;
 
-
+    @OneToMany(mappedBy = "hermano")
+    private List<Cuota> cuotas;
 
     public Hermano() {
     }
