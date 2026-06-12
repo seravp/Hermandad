@@ -1,6 +1,7 @@
 package com.hermandad.dto;
 
 import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.FormaPago;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
@@ -29,4 +30,10 @@ public class HermanoRequestDto {
     private LocalDate fechaNacimiento;
 
     private EstadoHermano estado;
+
+    private String iban;
+
+    private String titularCuenta;
+
+    private FormaPago formaPago;
 }
