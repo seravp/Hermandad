@@ -1,6 +1,7 @@
 package com.hermandad.service;
 
 import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.FormaPago;
 import com.hermandad.entity.Hermano;
 import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.repository.HermanoRepository;
@@ -182,5 +183,11 @@ public class HermanoService {
                 dni,
                 estado,
                 pageable);
+    }
+
+    public List<Hermano> obtenerDomiciliados() {
+
+        return hermanoRepository.findByFormaPago(
+                FormaPago.DOMICILIACION);
     }
 }

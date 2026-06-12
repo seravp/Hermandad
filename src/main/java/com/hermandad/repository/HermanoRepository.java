@@ -1,6 +1,7 @@
 package com.hermandad.repository;
 
 import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.FormaPago;
 import com.hermandad.entity.Hermano;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,8 @@ public interface HermanoRepository extends JpaRepository<Hermano, Long> {
     Optional<Hermano> findByDni(String dni);
 
     List<Hermano> findByEstado(EstadoHermano estado);
+
+    List<Hermano> findByFormaPago(FormaPago formaPago);
 
     @Query("SELECT COALESCE(MAX(h.numeroHermano), 0) FROM Hermano h")
     Integer obtenerUltimoNumeroHermano();

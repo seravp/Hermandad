@@ -110,4 +110,5 @@ public class CuotaController {
 
         return cuotaService.obtenerMorosos();
     }
+
 }

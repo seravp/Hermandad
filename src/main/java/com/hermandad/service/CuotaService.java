@@ -1,5 +1,6 @@
 package com.hermandad.service;
 
+import com.hermandad.dto.CartaMorosoDto;
 import com.hermandad.dto.MorosoDto;
 import com.hermandad.dto.ResumenCuotasDto;
 import com.hermandad.entity.Cuota;
@@ -220,5 +221,46 @@ public class CuotaService {
         }
 
         return resultado;
+    }
+
+    public CartaMorosoDto obtenerCartaMoroso(
+            Long hermanoId) {
+        List<Cuota> cuotas =
+                cuotaRepository.findByHermanoId(
+                                hermanoId)
+                        .stream()
+                        .filter(c ->
+                                c.getEstado()
+                                        == EstadoCuota.PENDIENTE)
+                        .toList();
+
+        if (cuotas.isEmpty()) {
+
+            throw new RecursoNoEncontradoException(
+                    "El hermano no tiene cuotas pendientes");
+        }
+
+        Hermano hermano =
+                cuotas.get(0).getHermano();
+
+        CartaMorosoDto dto =
+                new CartaMorosoDto();
+
+        dto.setNombreCompleto(
+                hermano.getNombre()
+                        + " "
+                        + hermano.getApellidos());
+
+        dto.setCuotasPendientes(
+                (long) cuotas.size());
+
+        dto.setImportePendiente(
+                cuotas.stream()
+                        .map(Cuota::getImporte)
+                        .reduce(
+                                BigDecimal.ZERO,
+                                BigDecimal::add));
+
+        return dto;
     }
 }

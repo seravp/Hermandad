@@ -148,6 +148,16 @@ public class HermanoController {
                 .map(hermanoMapper::toResponse);
     }
 
+    @GetMapping("/domiciliados")
+    public List<HermanoResponseDto> domiciliados() {
+
+        return hermanoService
+                .obtenerDomiciliados()
+                .stream()
+                .map(hermanoMapper::toResponse)
+                .toList();
+    }
+
     @PutMapping("/{id}")
     public HermanoResponseDto actualizar(
             @PathVariable Long id,
@@ -165,5 +175,7 @@ public class HermanoController {
     public void eliminar(@PathVariable Long id) {
         hermanoService.eliminar(id);
     }
+
+
 
 }
