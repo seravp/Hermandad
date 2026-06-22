@@ -29,7 +29,7 @@ public class CuotaController {
     }
 
     @GetMapping("/hermano/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
     public List<CuotaResponseDto> obtenerPorHermano(
             @PathVariable Long id) {
 
