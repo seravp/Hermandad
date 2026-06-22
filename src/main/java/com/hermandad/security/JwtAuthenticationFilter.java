@@ -39,13 +39,22 @@ public class JwtAuthenticationFilter
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+
+        if (path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.equals("/swagger-ui.html")
+                || path.equals("/api/auth/login")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader =
-                request.getHeader(
-                        "Authorization");
+                request.getHeader("Authorization");
 
         if (authHeader == null
-                || !authHeader.startsWith(
-                "Bearer ")) {
+                || !authHeader.startsWith("Bearer ")) {
 
             filterChain.doFilter(
                     request,
@@ -53,6 +62,7 @@ public class JwtAuthenticationFilter
 
             return;
         }
+
 
         String token =
                 authHeader.substring(7);
