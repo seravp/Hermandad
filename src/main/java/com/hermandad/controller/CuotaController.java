@@ -7,6 +7,7 @@ import com.hermandad.dto.ResumenCuotasDto;
 import com.hermandad.entity.Cuota;
 import com.hermandad.mapper.CuotaMapper;
 import com.hermandad.service.CuotaService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ public class CuotaController {
     }
 
     @GetMapping("/hermano/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public List<CuotaResponseDto> obtenerPorHermano(
             @PathVariable Long id) {
 
@@ -39,6 +41,7 @@ public class CuotaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public CuotaResponseDto crear(
             @RequestBody CuotaRequestDto dto) {
 
@@ -55,6 +58,7 @@ public class CuotaController {
     }
 
     @PostMapping("/generar/{anio}")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public String generarCuotas(
 
             @PathVariable Integer anio,
@@ -72,6 +76,7 @@ public class CuotaController {
     }
 
     @PutMapping("/{id}/pagar")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public CuotaResponseDto pagar(
             @PathVariable Long id) {
 
@@ -81,6 +86,7 @@ public class CuotaController {
     }
 
     @PutMapping("/{id}/anular")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public CuotaResponseDto anular(
             @PathVariable Long id) {
 
@@ -90,6 +96,7 @@ public class CuotaController {
     }
 
     @GetMapping("/pendientes")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public List<CuotaResponseDto> pendientes() {
 
         return cuotaService
@@ -100,12 +107,14 @@ public class CuotaController {
     }
 
     @GetMapping("/resumen")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public ResumenCuotasDto resumen() {
 
         return cuotaService.obtenerResumen();
     }
 
     @GetMapping("/morosos")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public List<MorosoDto> morosos() {
 
         return cuotaService.obtenerMorosos();

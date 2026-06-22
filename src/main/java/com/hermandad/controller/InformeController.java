@@ -4,6 +4,7 @@ import com.hermandad.report.InformeService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +21,7 @@ public class InformeController {
     }
 
     @GetMapping("/api/informes/prueba")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public ResponseEntity<byte[]> prueba()
             throws Exception {
 
@@ -36,6 +38,7 @@ public class InformeController {
     }
 
     @GetMapping("/api/informes/morosos")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public ResponseEntity<byte[]> morosos()
             throws Exception {
 
@@ -53,6 +56,7 @@ public class InformeController {
     }
 
     @GetMapping("/api/informes/domiciliados")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public ResponseEntity<byte[]> domiciliados()
             throws Exception {
 
@@ -71,6 +75,7 @@ public class InformeController {
 
     @GetMapping(
             "/api/informes/carta-moroso/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public ResponseEntity<byte[]> cartaMoroso(
             @PathVariable Long id)
             throws Exception {

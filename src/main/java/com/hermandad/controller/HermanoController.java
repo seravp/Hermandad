@@ -11,6 +11,7 @@ import com.hermandad.mapper.HermanoMapper;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -28,18 +29,8 @@ public class HermanoController {
         this.hermanoMapper = hermanoMapper;
     }
 
-    @PostMapping
-    public HermanoResponseDto crear(
-            @Valid @RequestBody HermanoRequestDto dto) {
-
-        Hermano hermano = hermanoMapper.toEntity(dto);
-
-        Hermano guardado = hermanoService.guardar(hermano);
-
-        return hermanoMapper.toResponse(guardado);
-    }
-
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> obtenerTodos() {
 
         return hermanoService.obtenerTodos()
@@ -49,6 +40,7 @@ public class HermanoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public HermanoResponseDto obtenerPorId(
             @PathVariable Long id) {
 
@@ -58,6 +50,7 @@ public class HermanoController {
     }
 
     @GetMapping("/dni/{dni}")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public HermanoResponseDto buscarPorDni(
             @PathVariable String dni) {
 
@@ -67,6 +60,7 @@ public class HermanoController {
     }
 
     @GetMapping("/estado/{estado}")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> buscarPorEstado(
             @PathVariable EstadoHermano estado) {
 
@@ -77,6 +71,7 @@ public class HermanoController {
     }
 
     @GetMapping("/apellidos/{apellidos}")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> buscarPorApellidos(
             @PathVariable String apellidos) {
 
@@ -87,6 +82,7 @@ public class HermanoController {
     }
 
     @GetMapping("/paginado")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public Page<HermanoResponseDto> obtenerPaginados(
 
             @RequestParam(defaultValue = "0") int page,
@@ -109,6 +105,7 @@ public class HermanoController {
     }
 
     @GetMapping("/busqueda-paginada")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public Page<HermanoResponseDto> buscarPaginado(
 
             @RequestParam(required = false)
@@ -149,6 +146,7 @@ public class HermanoController {
     }
 
     @GetMapping("/domiciliados")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> domiciliados() {
 
         return hermanoService
@@ -158,7 +156,20 @@ public class HermanoController {
                 .toList();
     }
 
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    public HermanoResponseDto crear(
+            @Valid @RequestBody HermanoRequestDto dto) {
+
+        Hermano hermano = hermanoMapper.toEntity(dto);
+
+        Hermano guardado = hermanoService.guardar(hermano);
+
+        return hermanoMapper.toResponse(guardado);
+    }
+
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
     public HermanoResponseDto actualizar(
             @PathVariable Long id,
             @Valid @RequestBody HermanoRequestDto dto) {
@@ -172,10 +183,9 @@ public class HermanoController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void eliminar(@PathVariable Long id) {
+
         hermanoService.eliminar(id);
     }
-
-
-
 }
