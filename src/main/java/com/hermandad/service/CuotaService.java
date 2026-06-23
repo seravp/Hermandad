@@ -292,4 +292,8 @@ public class CuotaService {
 
         return dto;
     }
+    public List<Cuota> obtenerTodas() {
+
+        return cuotaRepository.findAll();
+    }
 }
