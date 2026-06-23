@@ -104,6 +104,23 @@ public class JwtAuthenticationFilter
             }
         }
 
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+
+            System.out.println(
+                    "Usuario autenticado: "
+                            + SecurityContextHolder
+                            .getContext()
+                            .getAuthentication()
+                            .getName());
+
+            System.out.println(
+                    "Roles: "
+                            + SecurityContextHolder
+                            .getContext()
+                            .getAuthentication()
+                            .getAuthorities());
+        }
+
         filterChain.doFilter(
                 request,
                 response);

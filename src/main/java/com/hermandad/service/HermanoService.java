@@ -33,8 +33,14 @@ public class HermanoService {
             "estado"
     );
 
-    public HermanoService(HermanoRepository hermanoRepository) {
+    private final AuditoriaService auditoriaService;
+
+    public HermanoService(
+            HermanoRepository hermanoRepository,
+            AuditoriaService auditoriaService) {
+
         this.hermanoRepository = hermanoRepository;
+        this.auditoriaService = auditoriaService;
     }
 
     public List<Hermano> obtenerTodos() {
@@ -58,7 +64,15 @@ public class HermanoService {
 
         hermano.setFechaModificacion(LocalDateTime.now());
 
-        return hermanoRepository.save(hermano);
+        Hermano guardado =
+                hermanoRepository.save(hermano);
+
+        auditoriaService.registrar(
+                "CREAR",
+                "HERMANO",
+                guardado.getId());
+
+        return guardado;
     }
 
     public Hermano obtenerPorId(Long id) {
@@ -81,14 +95,29 @@ public class HermanoService {
         hermano.setEstado(datos.getEstado());
         hermano.setFechaModificacion(LocalDateTime.now());
 
-        return hermanoRepository.save(hermano);
+        Hermano actualizado =
+                hermanoRepository.save(hermano);
+
+        auditoriaService.registrar(
+                "MODIFICAR",
+                "HERMANO",
+                actualizado.getId());
+
+        return actualizado;
     }
 
     public void eliminar(Long id) {
 
         if (!hermanoRepository.existsById(id)) {
-            throw new RecursoNoEncontradoException("Hermano no encontrado");
+
+            throw new RecursoNoEncontradoException(
+                    "Hermano no encontrado");
         }
+
+        auditoriaService.registrar(
+                "ELIMINAR",
+                "HERMANO",
+                id);
 
         hermanoRepository.deleteById(id);
     }
@@ -184,6 +213,7 @@ public class HermanoService {
                 estado,
                 pageable);
     }
+
 
     public List<Hermano> obtenerDomiciliados() {
 

@@ -16,15 +16,21 @@ public class UsuarioService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final AuditoriaService auditoriaService;
+
     public UsuarioService(
             UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AuditoriaService auditoriaService) {
 
         this.usuarioRepository =
                 usuarioRepository;
 
         this.passwordEncoder =
                 passwordEncoder;
+
+        this.auditoriaService =
+                auditoriaService;
     }
 
     public List<Usuario> obtenerTodos() {
@@ -47,8 +53,15 @@ public class UsuarioService {
                 passwordEncoder.encode(
                         usuario.getPassword()));
 
-        return usuarioRepository.save(
-                usuario);
+        Usuario guardado =
+                usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(
+                "CREAR",
+                "USUARIO",
+                guardado.getId());
+
+        return guardado;
     }
 
 
@@ -81,8 +94,15 @@ public class UsuarioService {
                     "No se puede desactivar el último administrador");
         }
 
-        return usuarioRepository.save(
-                usuario);
+        Usuario actualizado =
+                usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(
+                "MODIFICAR",
+                "USUARIO",
+                actualizado.getId());
+
+        return actualizado;
     }
 
     public Usuario cambiarPassword(
@@ -96,8 +116,15 @@ public class UsuarioService {
                 passwordEncoder.encode(
                         password));
 
-        return usuarioRepository.save(
-                usuario);
+        Usuario actualizado =
+                usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(
+                "CAMBIAR_PASSWORD",
+                "USUARIO",
+                actualizado.getId());
+
+        return actualizado;
     }
 
     public void eliminar(Long id) {
@@ -112,6 +139,11 @@ public class UsuarioService {
             throw new RuntimeException(
                     "No se puede eliminar el último administrador");
         }
+
+        auditoriaService.registrar(
+                "ELIMINAR",
+                "USUARIO",
+                id);
 
         usuarioRepository.deleteById(id);
     }

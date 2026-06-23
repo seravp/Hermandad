@@ -8,6 +8,8 @@ import com.hermandad.dto.HermanoRequestDto;
 import com.hermandad.dto.HermanoResponseDto;
 import com.hermandad.mapper.HermanoMapper;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
+@Tag(name = "Hermanos")
 @RestController
 @RequestMapping("/api/hermanos")
 public class HermanoController {
@@ -29,6 +32,7 @@ public class HermanoController {
         this.hermanoMapper = hermanoMapper;
     }
 
+    @Operation(summary = "Obtener todos los hermanos")
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> obtenerTodos() {
@@ -39,6 +43,7 @@ public class HermanoController {
                 .toList();
     }
 
+    @Operation(summary = "Obtener hermano por id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public HermanoResponseDto obtenerPorId(
@@ -49,6 +54,7 @@ public class HermanoController {
         return hermanoMapper.toResponse(hermano);
     }
 
+    @Operation(summary = "Obtener hermano por DNI")
     @GetMapping("/dni/{dni}")
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public HermanoResponseDto buscarPorDni(
@@ -59,6 +65,7 @@ public class HermanoController {
         return hermanoMapper.toResponse(hermano);
     }
 
+    @Operation(summary = "Obtener hermano por estado")
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> buscarPorEstado(
@@ -70,6 +77,7 @@ public class HermanoController {
                 .toList();
     }
 
+    @Operation(summary = "Obtener hermano por apellidos")
     @GetMapping("/apellidos/{apellidos}")
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','CONSULTA')")
     public List<HermanoResponseDto> buscarPorApellidos(

@@ -27,13 +27,17 @@ public class CuotaService {
 
     private final HermanoRepository hermanoRepository;
 
+    private final AuditoriaService auditoriaService;
+
 
     public CuotaService(
             CuotaRepository cuotaRepository,
-            HermanoRepository hermanoRepository) {
+            HermanoRepository hermanoRepository,
+            AuditoriaService auditoriaService) {
 
         this.cuotaRepository = cuotaRepository;
         this.hermanoRepository = hermanoRepository;
+        this.auditoriaService = auditoriaService;
     }
 
     public Cuota guardar(
@@ -52,7 +56,15 @@ public class CuotaService {
 
         cuota.setFechaPago(null);
 
-        return cuotaRepository.save(cuota);
+        Cuota guardada =
+                cuotaRepository.save(cuota);
+
+        auditoriaService.registrar(
+                "CREAR",
+                "CUOTA",
+                guardada.getId());
+
+        return guardada;
     }
 
     public List<Cuota> obtenerPorHermano(
@@ -73,7 +85,15 @@ public class CuotaService {
 
         cuota.setFechaPago(LocalDate.now());
 
-        return cuotaRepository.save(cuota);
+        Cuota actualizada =
+                cuotaRepository.save(cuota);
+
+        auditoriaService.registrar(
+                "PAGAR",
+                "CUOTA",
+                actualizada.getId());
+
+        return actualizada;
     }
 
     public Cuota anular(Long id) {
@@ -87,7 +107,15 @@ public class CuotaService {
 
         cuota.setFechaPago(null);
 
-        return cuotaRepository.save(cuota);
+        Cuota actualizada =
+                cuotaRepository.save(cuota);
+
+        auditoriaService.registrar(
+                "ANULAR",
+                "CUOTA",
+                actualizada.getId());
+
+        return actualizada;
     }
 
     public List<Cuota> obtenerPendientes() {
@@ -130,6 +158,11 @@ public class CuotaService {
                 creadas++;
             }
         }
+
+        auditoriaService.registrar(
+                "GENERAR_ANUALES",
+                "CUOTA",
+                null);
 
         return creadas;
     }
