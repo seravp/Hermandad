@@ -1,6 +1,7 @@
 package com.hermandad.service;
 
 import com.hermandad.dto.CartaMorosoDto;
+import com.hermandad.dto.DashboardTesoreriaDto;
 import com.hermandad.dto.MorosoDto;
 import com.hermandad.dto.ResumenCuotasDto;
 import com.hermandad.entity.Cuota;
@@ -260,6 +261,34 @@ public class CuotaService {
                         .reduce(
                                 BigDecimal.ZERO,
                                 BigDecimal::add));
+
+        return dto;
+    }
+
+    public DashboardTesoreriaDto obtenerDashboard() {
+
+        DashboardTesoreriaDto dto =
+                new DashboardTesoreriaDto();
+
+        dto.setTotalHermanos(
+                hermanoRepository.count());
+
+        dto.setCuotasPagadas(
+                cuotaRepository.countByEstado(
+                        EstadoCuota.PAGADA));
+
+        dto.setCuotasPendientes(
+                cuotaRepository.countByEstado(
+                        EstadoCuota.PENDIENTE));
+
+        dto.setImporteRecaudado(
+                cuotaRepository.totalRecaudado());
+
+        dto.setImportePendiente(
+                cuotaRepository.totalPendiente());
+
+        dto.setMorosos(
+                (long) obtenerMorosos().size());
 
         return dto;
     }

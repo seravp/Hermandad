@@ -1,9 +1,6 @@
 package com.hermandad.controller;
 
-import com.hermandad.dto.CuotaRequestDto;
-import com.hermandad.dto.CuotaResponseDto;
-import com.hermandad.dto.MorosoDto;
-import com.hermandad.dto.ResumenCuotasDto;
+import com.hermandad.dto.*;
 import com.hermandad.entity.Cuota;
 import com.hermandad.mapper.CuotaMapper;
 import com.hermandad.service.CuotaService;
@@ -118,6 +115,13 @@ public class CuotaController {
     public List<MorosoDto> morosos() {
 
         return cuotaService.obtenerMorosos();
+    }
+
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    public DashboardTesoreriaDto dashboard() {
+
+        return cuotaService.obtenerDashboard();
     }
 
 }
