@@ -30,22 +30,17 @@ public interface HermanoRepository extends JpaRepository<Hermano, Long> {
     SELECT h
     FROM Hermano h
     WHERE
-        LOWER(h.apellidos)
-        LIKE LOWER(CONCAT('%', :apellidos, '%'))
+        (
+            :texto = ''
+            OR LOWER(h.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+            OR LOWER(h.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))
+            OR LOWER(h.dni) LIKE LOWER(CONCAT('%', :texto, '%'))
+        )
     AND
-        LOWER(h.nombre)
-        LIKE LOWER(CONCAT('%', :nombre, '%'))
-    AND
-        LOWER(h.dni)
-        LIKE LOWER(CONCAT('%', :dni, '%'))
-    AND
-        (:estado IS NULL
-            OR h.estado = :estado)
+        (:estado IS NULL OR h.estado = :estado)
 """)
     Page<Hermano> buscar(
-            @Param("nombre") String nombre,
-            @Param("apellidos") String apellidos,
-            @Param("dni") String dni,
+            @Param("texto") String texto,
             @Param("estado") EstadoHermano estado,
             Pageable pageable);
 

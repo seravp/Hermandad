@@ -4,6 +4,7 @@ import com.hermandad.entity.EstadoHermano;
 import com.hermandad.entity.FormaPago;
 import com.hermandad.entity.Hermano;
 import com.hermandad.exception.CampoOrdenacionInvalidoException;
+import com.hermandad.exception.DniDuplicadoException;
 import com.hermandad.repository.HermanoRepository;
 import com.hermandad.exception.RecursoNoEncontradoException;
 
@@ -50,7 +51,7 @@ public class HermanoService {
     public Hermano guardar(Hermano hermano) {
 
         if (hermanoRepository.existsByDni(hermano.getDni())) {
-            throw new RuntimeException("Ya existe un hermano con ese DNI");
+            throw new DniDuplicadoException(hermano.getDni());
         }
 
         Integer ultimoNumero =
@@ -84,19 +85,45 @@ public class HermanoService {
     public Hermano actualizar(Long id, Hermano datos) {
 
         Hermano hermano = hermanoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Hermano no encontrado"));
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException("Hermano no encontrado"));
 
         hermano.setNombre(datos.getNombre());
         hermano.setApellidos(datos.getApellidos());
+
+        // Si finalmente decides permitir editar el DNI
+
+        if (!hermano.getDni().equals(datos.getDni())
+                && hermanoRepository.existsByDni(datos.getDni())) {
+
+            throw new DniDuplicadoException(datos.getDni());
+
+        }
+
+        hermano.setDni(datos.getDni());
+
         hermano.setTelefono(datos.getTelefono());
         hermano.setEmail(datos.getEmail());
         hermano.setDireccion(datos.getDireccion());
+
         hermano.setFechaNacimiento(datos.getFechaNacimiento());
+
         hermano.setEstado(datos.getEstado());
+        hermano.setFormaPago(datos.getFormaPago());
+
+        if (datos.getFormaPago() == FormaPago.EFECTIVO) {
+            hermano.setIban(null);
+            hermano.setTitularCuenta(null);
+        } else {
+            hermano.setIban(datos.getIban());
+            hermano.setTitularCuenta(datos.getTitularCuenta());
+        }
+
         hermano.setFechaModificacion(LocalDateTime.now());
 
-        Hermano actualizado =
-                hermanoRepository.save(hermano);
+        Hermano actualizado = hermanoRepository.save(hermano);
+
+
 
         auditoriaService.registrar(
                 "MODIFICAR",
@@ -108,18 +135,16 @@ public class HermanoService {
 
     public void eliminar(Long id) {
 
-        if (!hermanoRepository.existsById(id)) {
-
-            throw new RecursoNoEncontradoException(
-                    "Hermano no encontrado");
-        }
+        Hermano hermano = hermanoRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException("Hermano no encontrado"));
 
         auditoriaService.registrar(
                 "ELIMINAR",
                 "HERMANO",
-                id);
+                hermano.getId());
 
-        hermanoRepository.deleteById(id);
+        hermanoRepository.delete(hermano);
     }
 
     public Hermano buscarPorDni(String dni) {
@@ -169,25 +194,15 @@ public class HermanoService {
     }
 
     public Page<Hermano> buscarPaginado(
-            String nombre,
-            String apellidos,
-            String dni,
+            String texto,
             EstadoHermano estado,
             int page,
             int size,
             String sort,
             String direction) {
 
-        if (nombre == null) {
-            nombre = "";
-        }
-
-        if (apellidos == null) {
-            apellidos = "";
-        }
-
-        if (dni == null) {
-            dni = "";
+        if (texto == null) {
+            texto = "";
         }
 
         if (!CAMPOS_ORDENABLES.contains(sort)) {
@@ -207,9 +222,7 @@ public class HermanoService {
                         Sort.by(direccion, sort));
 
         return hermanoRepository.buscar(
-                nombre,
-                apellidos,
-                dni,
+                texto,
                 estado,
                 pageable);
     }

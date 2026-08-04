@@ -10,4 +10,5 @@ public class GestionHermandadApplication {
 		SpringApplication.run(GestionHermandadApplication.class, args);
 	}
 
+
 }

@@ -117,13 +117,7 @@ public class HermanoController {
     public Page<HermanoResponseDto> buscarPaginado(
 
             @RequestParam(required = false)
-            String nombre,
-
-            @RequestParam(required = false)
-            String apellidos,
-
-            @RequestParam(required = false)
-            String dni,
+            String texto,
 
             @RequestParam(required = false)
             EstadoHermano estado,
@@ -142,9 +136,7 @@ public class HermanoController {
 
         return hermanoService
                 .buscarPaginado(
-                        nombre,
-                        apellidos,
-                        dni,
+                        texto,
                         estado,
                         page,
                         size,
@@ -191,7 +183,7 @@ public class HermanoController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
     public void eliminar(@PathVariable Long id) {
 
         hermanoService.eliminar(id);
