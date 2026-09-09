@@ -27,6 +27,10 @@ public class CuotaMapper {
                 cuota.getHermano()
                         .getNumeroHermano());
 
+        dto.setNombreHermano(
+                cuota.getHermano().getNombre() + " " +
+                        cuota.getHermano().getApellidos());
+
         return dto;
     }
 

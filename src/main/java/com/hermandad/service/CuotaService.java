@@ -8,9 +8,14 @@ import com.hermandad.entity.Cuota;
 import com.hermandad.entity.EstadoCuota;
 import com.hermandad.entity.EstadoHermano;
 import com.hermandad.entity.Hermano;
+import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.exception.RecursoNoEncontradoException;
 import com.hermandad.repository.CuotaRepository;
 import com.hermandad.repository.HermanoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +35,13 @@ public class CuotaService {
 
     private final AuditoriaService auditoriaService;
 
+    private static final Set<String> CAMPOS_ORDENABLES = Set.of(
+            "anio",
+            "importe",
+            "estado",
+            "fechaPago",
+            "hermano.numeroHermano"
+    );
 
     public CuotaService(
             CuotaRepository cuotaRepository,
@@ -328,5 +341,118 @@ public class CuotaService {
     public List<Cuota> obtenerTodas() {
 
         return cuotaRepository.findAll();
+    }
+
+    public Cuota obtenerPorId(Long id) {
+
+        return cuotaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException(
+                                "Cuota no encontrada"));
+    }
+
+    public Cuota actualizar(
+            Long id,
+            Cuota datos) {
+
+        Cuota cuota =
+                cuotaRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RecursoNoEncontradoException(
+                                        "Cuota no encontrada"));
+
+        cuota.setImporte(datos.getImporte());
+        cuota.setObservaciones(datos.getObservaciones());
+
+        Cuota actualizada =
+                cuotaRepository.save(cuota);
+
+        auditoriaService.registrar(
+                "MODIFICAR",
+                "CUOTA",
+                actualizada.getId());
+
+        return actualizada;
+    }
+
+    public void eliminar(Long id) {
+
+        Cuota cuota =
+                cuotaRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RecursoNoEncontradoException(
+                                        "Cuota no encontrada"));
+
+        auditoriaService.registrar(
+                "ELIMINAR",
+                "CUOTA",
+                cuota.getId());
+
+        cuotaRepository.delete(cuota);
+    }
+
+    public Page<Cuota> obtenerPaginadas(
+            int page,
+            int size,
+            String sort,
+            String direction) {
+
+        if (!CAMPOS_ORDENABLES.contains(sort)) {
+            throw new CampoOrdenacionInvalidoException(
+                    "Campo de ordenación no permitido: " + sort);
+        }
+
+        Sort.Direction direccion =
+                direction.equalsIgnoreCase("desc")
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size,
+                        Sort.by(direccion, sort));
+
+        return cuotaRepository.findAll(pageable);
+    }
+
+    public Page<Cuota> buscarPaginado(
+            String texto,
+            EstadoCuota estado,
+            Integer anio,
+            int page,
+            int size,
+            String sort,
+            String direction) {
+
+        if (texto == null) {
+            texto = "";
+        }
+
+        if (!CAMPOS_ORDENABLES.contains(sort)) {
+            throw new CampoOrdenacionInvalidoException(
+                    "Campo de ordenación no permitido: " + sort);
+        }
+
+        Sort.Direction direccion =
+                direction.equalsIgnoreCase("desc")
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size,
+                        Sort.by(direccion, sort));
+
+        return cuotaRepository.buscar(
+                texto,
+                estado,
+                anio,
+                pageable);
+    }
+
+    public List<Integer> obtenerAniosDisponibles() {
+        return cuotaRepository.obtenerAniosDisponibles();
     }
 }
