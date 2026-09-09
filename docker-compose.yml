@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:17
+
+    container_name: hermandad-postgres
+
+    environment:
+      POSTGRES_DB: Hermandad
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin17
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+
+    container_name: hermandad-backend
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+volumes:
+  postgres_data:

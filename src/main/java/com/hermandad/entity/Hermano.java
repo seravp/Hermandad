@@ -1,5 +1,6 @@
 package com.hermandad.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +15,10 @@ import lombok.Data;
 @Entity
 @Table(name = "hermanos")
 public class Hermano {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
@@ -26,10 +31,6 @@ public class Hermano {
 
     @Email(message = "Email no válido")
     private String email;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(unique = true)
     private Integer numeroHermano;
@@ -49,8 +50,17 @@ public class Hermano {
 
     private LocalDateTime fechaModificacion;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "hermano")
     private List<Cuota> cuotas;
+
+    @Size(max = 34)
+    private String iban;
+
+    private String titularCuenta;
+
+    @Enumerated(EnumType.STRING)
+    private FormaPago formaPago;
 
     public Hermano() {
     }
