@@ -96,6 +96,16 @@ public class CuotaController {
         return cuotaMapper.toResponse(cuota);
     }
 
+    @PutMapping("/{id}/deshacerPago")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    public CuotaResponseDto deshacerPago(
+            @PathVariable Long id) {
+
+        Cuota cuota = cuotaService.deshacerPago(id);
+
+        return cuotaMapper.toResponse(cuota);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public CuotaResponseDto actualizar(

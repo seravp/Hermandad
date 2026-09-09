@@ -1,9 +1,5 @@
-package com.hermandad.config;
+package com.hermandad.exception;
 
-import com.hermandad.exception.ApiError;
-import com.hermandad.exception.CampoOrdenacionInvalidoException;
-import com.hermandad.exception.DniDuplicadoException;
-import com.hermandad.exception.RecursoNoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -89,14 +85,14 @@ public class GlobalExceptionHandler {
     /**
      * Cualquier otra excepción de negocio.
      */
-    @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleRuntimeException(
-            RuntimeException ex,
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleBusinessException(
+            BusinessException ex,
             HttpServletRequest request) {
 
         return buildError(
-                HttpStatus.CONFLICT,
+                HttpStatus.BAD_REQUEST,
                 ex.getMessage(),
                 request);
     }

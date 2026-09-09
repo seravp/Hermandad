@@ -89,10 +89,15 @@ public class CuotaService {
 
     public Cuota pagar(Long id) {
 
-        Cuota cuota = cuotaRepository.findById(id)
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException(
-                                "Cuota no encontrada"));
+        Cuota cuota = obtenerCuota(id);
+
+        if (cuota.getEstado() == EstadoCuota.PAGADA) {
+            throw new BusinessException("La cuota ya está pagada.");
+        }
+
+        if (cuota.getEstado() == EstadoCuota.ANULADA) {
+            throw new BusinessException("No se puede marcar como pagada una cuota anulada.");
+        }
 
         cuota.setEstado(EstadoCuota.PAGADA);
 
@@ -107,14 +112,20 @@ public class CuotaService {
                 actualizada.getId());
 
         return actualizada;
+
     }
 
     public Cuota anular(Long id) {
 
-        Cuota cuota = cuotaRepository.findById(id)
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException(
-                                "Cuota no encontrada"));
+        Cuota cuota = obtenerCuota(id);
+
+        if (cuota.getEstado() == EstadoCuota.ANULADA) {
+            throw new BusinessException("La cuota ya está anulada.");
+        }
+
+        if (cuota.getEstado() != EstadoCuota.PENDIENTE) {
+            throw new BusinessException("Solo se pueden anular cuotas pendientes.");
+        }
 
         cuota.setEstado(EstadoCuota.ANULADA);
 
@@ -125,6 +136,33 @@ public class CuotaService {
 
         auditoriaService.registrar(
                 "ANULAR",
+                "CUOTA",
+                actualizada.getId());
+
+        return actualizada;
+    }
+
+    public Cuota deshacerPago(Long id) {
+
+        Cuota cuota = obtenerCuota(id);
+
+        if (cuota.getEstado() == EstadoCuota.PENDIENTE) {
+            throw new BusinessException("La cuota ya está pendiente.");
+        }
+
+        if (cuota.getEstado() != EstadoCuota.PAGADA) {
+            throw new BusinessException("Solo se pueden deshacer cuotas pagadas.");
+        }
+
+        cuota.setEstado(EstadoCuota.PENDIENTE);
+
+        cuota.setFechaPago(null);
+
+        Cuota actualizada =
+                cuotaRepository.save(cuota);
+
+        auditoriaService.registrar(
+                "DESHACER-PAGO",
                 "CUOTA",
                 actualizada.getId());
 
@@ -351,21 +389,22 @@ public class CuotaService {
                                 "Cuota no encontrada"));
     }
 
-    public Cuota actualizar(
-            Long id,
-            Cuota datos) {
+    public Cuota actualizar(Long id, Cuota datos) {
 
-        Cuota cuota =
-                cuotaRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RecursoNoEncontradoException(
-                                        "Cuota no encontrada"));
+        Cuota cuota = obtenerCuota(id);
 
         cuota.setImporte(datos.getImporte());
         cuota.setObservaciones(datos.getObservaciones());
 
-        Cuota actualizada =
-                cuotaRepository.save(cuota);
+        Cuota actualizada = cuotaRepository.save(cuota);
+
+        if (datos.getImporte() == null || datos.getImporte().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("El importe debe ser mayor que cero.");
+        }
+
+        if (cuota.getEstado() == EstadoCuota.ANULADA) {
+            throw new BusinessException("No se puede editar una cuota anulada.");
+        }
 
         auditoriaService.registrar(
                 "MODIFICAR",
@@ -377,11 +416,13 @@ public class CuotaService {
 
     public void eliminar(Long id) {
 
-        Cuota cuota =
-                cuotaRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RecursoNoEncontradoException(
-                                        "Cuota no encontrada"));
+        Cuota cuota = obtenerCuota(id);
+
+        if (cuota.getEstado() == EstadoCuota.PAGADA) {
+            throw new BusinessException(
+                    "No se puede eliminar una cuota pagada."
+            );
+        }
 
         auditoriaService.registrar(
                 "ELIMINAR",
@@ -454,5 +495,18 @@ public class CuotaService {
 
     public List<Integer> obtenerAniosDisponibles() {
         return cuotaRepository.obtenerAniosDisponibles();
+    }
+
+    private Cuota obtenerCuota(Long id) {
+        return cuotaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException("Cuota no encontrada"));
+    }
+
+    public class BusinessException extends RuntimeException {
+
+        public BusinessException(String mensaje) {
+            super(mensaje);
+        }
     }
 }
