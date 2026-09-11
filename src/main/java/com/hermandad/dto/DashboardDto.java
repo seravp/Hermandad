@@ -1,12 +1,11 @@
 package com.hermandad.dto;
 
-import com.hermandad.entity.EstadoCuota;
 import lombok.Data;
 
 import java.math.BigDecimal;
 
 @Data
-public class DashboardTesoreriaDto {
+public class DashboardDto {
 
     private Long totalHermanos;
 
@@ -19,6 +18,12 @@ public class DashboardTesoreriaDto {
     private BigDecimal importeRecaudado;
 
     private BigDecimal importePendiente;
+
+    private Integer anioActivo;
+
+    private Integer porcentajeCobrado;
+
+    private Long totalCuotas;
 
 
 }

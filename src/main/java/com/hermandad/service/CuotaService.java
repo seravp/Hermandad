@@ -1,13 +1,11 @@
 package com.hermandad.service;
 
 import com.hermandad.dto.CartaMorosoDto;
-import com.hermandad.dto.DashboardTesoreriaDto;
+import com.hermandad.dto.DashboardDto;
 import com.hermandad.dto.MorosoDto;
 import com.hermandad.dto.ResumenCuotasDto;
-import com.hermandad.entity.Cuota;
-import com.hermandad.entity.EstadoCuota;
-import com.hermandad.entity.EstadoHermano;
-import com.hermandad.entity.Hermano;
+import com.hermandad.entity.*;
+import com.hermandad.exception.BusinessException;
 import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.exception.RecursoNoEncontradoException;
 import com.hermandad.repository.CuotaRepository;
@@ -30,27 +28,28 @@ import java.util.stream.Collectors;
 public class CuotaService {
 
     private final CuotaRepository cuotaRepository;
-
     private final HermanoRepository hermanoRepository;
-
     private final AuditoriaService auditoriaService;
+    private final ConfiguracionService configuracionService;
 
     private static final Set<String> CAMPOS_ORDENABLES = Set.of(
             "anio",
             "importe",
             "estado",
             "fechaPago",
-            "hermano.numeroHermano"
+            "numeroHermano"
     );
 
     public CuotaService(
             CuotaRepository cuotaRepository,
             HermanoRepository hermanoRepository,
-            AuditoriaService auditoriaService) {
+            AuditoriaService auditoriaService,
+            ConfiguracionService configuracionService) {
 
         this.cuotaRepository = cuotaRepository;
         this.hermanoRepository = hermanoRepository;
         this.auditoriaService = auditoriaService;
+        this.configuracionService = configuracionService;
     }
 
     public Cuota guardar(
@@ -123,10 +122,6 @@ public class CuotaService {
             throw new BusinessException("La cuota ya está anulada.");
         }
 
-        if (cuota.getEstado() != EstadoCuota.PENDIENTE) {
-            throw new BusinessException("Solo se pueden anular cuotas pendientes.");
-        }
-
         cuota.setEstado(EstadoCuota.ANULADA);
 
         cuota.setFechaPago(null);
@@ -175,9 +170,13 @@ public class CuotaService {
                 EstadoCuota.PENDIENTE);
     }
 
-    public int generarCuotasAnuales(
-            Integer anio,
-            BigDecimal importe) {
+    public int generarCuotasAnuales(Integer anio) {
+
+
+        Configuracion configuracion = configuracionService.obtenerConfiguracion();
+
+        BigDecimal importe =
+                configuracion.getImporteCuota();
 
         List<Hermano> hermanos =
                 hermanoRepository.findByEstado(
@@ -349,10 +348,10 @@ public class CuotaService {
         return dto;
     }
 
-    public DashboardTesoreriaDto obtenerDashboard() {
+    public DashboardDto obtenerDashboard() {
 
-        DashboardTesoreriaDto dto =
-                new DashboardTesoreriaDto();
+        DashboardDto dto =
+                new DashboardDto();
 
         dto.setTotalHermanos(
                 hermanoRepository.count());
@@ -396,7 +395,7 @@ public class CuotaService {
         cuota.setImporte(datos.getImporte());
         cuota.setObservaciones(datos.getObservaciones());
 
-        Cuota actualizada = cuotaRepository.save(cuota);
+
 
         if (datos.getImporte() == null || datos.getImporte().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("El importe debe ser mayor que cero.");
@@ -405,6 +404,8 @@ public class CuotaService {
         if (cuota.getEstado() == EstadoCuota.ANULADA) {
             throw new BusinessException("No se puede editar una cuota anulada.");
         }
+
+        Cuota actualizada = cuotaRepository.save(cuota);
 
         auditoriaService.registrar(
                 "MODIFICAR",
@@ -448,11 +449,21 @@ public class CuotaService {
                         ? Sort.Direction.DESC
                         : Sort.Direction.ASC;
 
+        String campoOrden = switch (sort) {
+
+            case "numeroHermano" -> "hermano.numeroHermano";
+
+            case "nombreHermano" -> "hermano.nombre";
+
+            default -> sort;
+
+        };
+
         Pageable pageable =
                 PageRequest.of(
                         page,
                         size,
-                        Sort.by(direccion, sort));
+                        Sort.by(direccion, campoOrden));
 
         return cuotaRepository.findAll(pageable);
     }
@@ -480,11 +491,17 @@ public class CuotaService {
                         ? Sort.Direction.DESC
                         : Sort.Direction.ASC;
 
+        String campoOrden = switch (sort) {
+            case "numeroHermano" -> "hermano.numeroHermano";
+            case "nombreHermano" -> "hermano.nombre";
+            default -> sort;
+        };
+
         Pageable pageable =
                 PageRequest.of(
                         page,
                         size,
-                        Sort.by(direccion, sort));
+                        Sort.by(direccion, campoOrden));
 
         return cuotaRepository.buscar(
                 texto,
@@ -501,12 +518,5 @@ public class CuotaService {
         return cuotaRepository.findById(id)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Cuota no encontrada"));
-    }
-
-    public class BusinessException extends RuntimeException {
-
-        public BusinessException(String mensaje) {
-            super(mensaje);
-        }
     }
 }

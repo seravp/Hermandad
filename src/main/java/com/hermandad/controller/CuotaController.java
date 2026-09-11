@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -60,20 +59,11 @@ public class CuotaController {
 
     @PostMapping("/generar/{anio}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
-    public String generarCuotas(
+    public String generarCuotas(@PathVariable Integer anio) {
 
-            @PathVariable Integer anio,
+        int total = cuotaService.generarCuotasAnuales(anio);
 
-            @RequestParam BigDecimal importe) {
-
-        int total =
-                cuotaService.generarCuotasAnuales(
-                        anio,
-                        importe);
-
-        return "Se han generado "
-                + total
-                + " cuotas";
+        return "Se han generado " + total + " cuotas";
     }
 
     @PutMapping("/{id}/pagar")
@@ -145,7 +135,7 @@ public class CuotaController {
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
-    public DashboardTesoreriaDto dashboard() {
+    public DashboardDto dashboard() {
 
         return cuotaService.obtenerDashboard();
     }

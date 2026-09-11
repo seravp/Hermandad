@@ -3,6 +3,7 @@ package com.hermandad.service;
 import com.hermandad.entity.EstadoHermano;
 import com.hermandad.entity.FormaPago;
 import com.hermandad.entity.Hermano;
+import com.hermandad.exception.BusinessException;
 import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.exception.DniDuplicadoException;
 import com.hermandad.repository.HermanoRepository;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import com.hermandad.util.IbanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -100,6 +102,12 @@ public class HermanoService {
 
         }
 
+        String iban = IbanUtils.normalizar(datos.getIban());
+
+        if (!IbanUtils.esValido(iban)) {
+            throw new BusinessException("El formato del IBAN no es válido.");
+        }
+
         hermano.setDni(datos.getDni());
 
         hermano.setTelefono(datos.getTelefono());
@@ -115,7 +123,7 @@ public class HermanoService {
             hermano.setIban(null);
             hermano.setTitularCuenta(null);
         } else {
-            hermano.setIban(datos.getIban());
+            hermano.setIban(iban);
             hermano.setTitularCuenta(datos.getTitularCuenta());
         }
 

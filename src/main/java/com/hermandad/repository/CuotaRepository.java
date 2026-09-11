@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface CuotaRepository
@@ -39,15 +40,16 @@ public interface CuotaRepository
     @Query("""
     SELECT c
     FROM Cuota c
+    JOIN c.hermano h
     WHERE
-        (
-            LOWER(c.hermano.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
-            OR LOWER(c.hermano.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))
-            OR CAST(c.hermano.numeroHermano AS string) LIKE CONCAT('%', :texto, '%')
-        )
-        AND (:estado IS NULL OR c.estado = :estado)
-        AND (:anio IS NULL OR c.anio = :anio)
-""")
+    (
+        LOWER(h.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
+        OR LOWER(h.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))
+        OR CAST(h.numeroHermano AS string) LIKE CONCAT('%', :texto, '%')
+    )
+    AND (:estado IS NULL OR c.estado = :estado)
+    AND (:anio IS NULL OR c.anio = :anio)
+    """)
     Page<Cuota> buscar(
             @Param("texto") String texto,
             @Param("estado") EstadoCuota estado,
@@ -60,5 +62,27 @@ public interface CuotaRepository
     ORDER BY c.anio DESC
 """)
     List<Integer> obtenerAniosDisponibles();
+
+    long countByEstadoAndAnio(
+            EstadoCuota estado,
+            Integer anio);
+
+    @Query("""
+        SELECT COALESCE(SUM(c.importe),0)
+        FROM Cuota c
+        WHERE c.estado = :estado
+        AND c.anio = :anio
+        """)
+    BigDecimal sumImporteByEstadoAndAnio(
+            EstadoCuota estado,
+            Integer anio);
+
+    @Query("""
+        SELECT COUNT(DISTINCT c.hermano.id)
+        FROM Cuota c
+        WHERE c.estado = 'PENDIENTE'
+        AND c.anio = :anio
+        """)
+    Long contarMorosos(Integer anio);
 
 }

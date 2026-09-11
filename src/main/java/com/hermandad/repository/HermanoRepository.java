@@ -44,4 +44,6 @@ public interface HermanoRepository extends JpaRepository<Hermano, Long> {
             @Param("estado") EstadoHermano estado,
             Pageable pageable);
 
+    long countByEstado(EstadoHermano estado);
+
 }
