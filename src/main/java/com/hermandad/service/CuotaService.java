@@ -259,10 +259,20 @@ public class CuotaService {
     }
 
     public List<MorosoDto> obtenerMorosos() {
+        return obtenerMorosos(null);
+    }
+
+    public List<MorosoDto> obtenerMorosos(Integer anio) {
 
         List<Cuota> cuotasPendientes =
                 cuotaRepository.findByEstado(
                         EstadoCuota.PENDIENTE);
+
+        if (anio != null) {
+            cuotasPendientes = cuotasPendientes.stream()
+                    .filter(cuota -> cuota.getAnio().equals(anio))
+                    .toList();
+        }
 
         Map<Long, List<Cuota>> agrupadas =
                 cuotasPendientes.stream()
