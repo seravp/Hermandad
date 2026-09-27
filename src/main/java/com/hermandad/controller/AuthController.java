@@ -6,6 +6,8 @@ import com.hermandad.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,15 +30,24 @@ public class AuthController {
     public LoginResponse login(
             @RequestBody LoginRequest request) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()));
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getUsername(),
+                                request.getPassword()));
 
-        String token =
-                jwtService.generateToken(
-                        request.getUsername());
+        String rol = authentication
+                .getAuthorities()
+                .stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .map(authority ->
+                        authority.replaceFirst("^ROLE_", ""))
+                .orElseThrow();
 
-        return new LoginResponse(token);
+        String token = jwtService.generateToken(
+                authentication.getName());
+
+        return new LoginResponse(token, rol);
     }
 }

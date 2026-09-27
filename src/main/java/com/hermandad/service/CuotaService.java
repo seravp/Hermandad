@@ -56,6 +56,34 @@ public class CuotaService {
             Long hermanoId,
             Cuota cuota) {
 
+        if (hermanoId == null) {
+            throw new BusinessException(
+                    "Debe seleccionarse un hermano.");
+        }
+
+        if (cuota.getAnio() == null) {
+            throw new BusinessException(
+                    "El año de la cuota es obligatorio.");
+        }
+
+        if (cuota.getImporte() == null
+                || cuota.getImporte()
+                .compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new BusinessException(
+                    "El importe debe ser mayor que cero.");
+        }
+
+        if (cuotaRepository
+                .existsByHermanoIdAndAnio(
+                        hermanoId,
+                        cuota.getAnio())) {
+
+            throw new BusinessException(
+                    "El hermano ya tiene una cuota para el año "
+                            + cuota.getAnio() + ".");
+        }
+
         Hermano hermano =
                 hermanoRepository.findById(hermanoId)
                         .orElseThrow(() ->
@@ -63,9 +91,7 @@ public class CuotaService {
                                         "Hermano no encontrado"));
 
         cuota.setHermano(hermano);
-
         cuota.setEstado(EstadoCuota.PENDIENTE);
-
         cuota.setFechaPago(null);
 
         Cuota guardada =
@@ -398,24 +424,30 @@ public class CuotaService {
                                 "Cuota no encontrada"));
     }
 
-    public Cuota actualizar(Long id, Cuota datos) {
+    public Cuota actualizar(
+            Long id,
+            Cuota datos) {
 
         Cuota cuota = obtenerCuota(id);
+
+        if (cuota.getEstado() == EstadoCuota.ANULADA) {
+            throw new BusinessException(
+                    "No se puede editar una cuota anulada.");
+        }
+
+        if (datos.getImporte() == null
+                || datos.getImporte()
+                .compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new BusinessException(
+                    "El importe debe ser mayor que cero.");
+        }
 
         cuota.setImporte(datos.getImporte());
         cuota.setObservaciones(datos.getObservaciones());
 
-
-
-        if (datos.getImporte() == null || datos.getImporte().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException("El importe debe ser mayor que cero.");
-        }
-
-        if (cuota.getEstado() == EstadoCuota.ANULADA) {
-            throw new BusinessException("No se puede editar una cuota anulada.");
-        }
-
-        Cuota actualizada = cuotaRepository.save(cuota);
+        Cuota actualizada =
+                cuotaRepository.save(cuota);
 
         auditoriaService.registrar(
                 "MODIFICAR",

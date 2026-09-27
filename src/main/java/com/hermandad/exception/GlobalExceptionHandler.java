@@ -10,10 +10,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
+    private static final Logger logger =
+            LoggerFactory.getLogger(
+                    GlobalExceptionHandler.class);
     /**
      * Errores de validación de @Valid.
      * Se mantienen con el formato actual para facilitar
@@ -35,6 +41,17 @@ public class GlobalExceptionHandler {
                         ));
 
         return errores;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiError handleAuthentication(
+            HttpServletRequest request) {
+
+        return buildError(
+                HttpStatus.UNAUTHORIZED,
+                "Usuario o contraseña incorrectos.",
+                request);
     }
 
     /**
@@ -100,12 +117,28 @@ public class GlobalExceptionHandler {
     /**
      * Error inesperado.
      */
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiError handleAccessDenied(
+            HttpServletRequest request) {
+
+        return buildError(
+                HttpStatus.FORBIDDEN,
+                "No tienes permiso para realizar esta operación.",
+                request);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(
             Exception ex,
             HttpServletRequest request) {
-
+        logger.error(
+                "Error inesperado en {} {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                ex);
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Se ha producido un error interno.",

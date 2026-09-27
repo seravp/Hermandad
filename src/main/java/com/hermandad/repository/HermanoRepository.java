@@ -35,6 +35,7 @@ public interface HermanoRepository extends JpaRepository<Hermano, Long> {
             OR LOWER(h.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
             OR LOWER(h.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))
             OR LOWER(h.dni) LIKE LOWER(CONCAT('%', :texto, '%'))
+            OR CAST(h.numeroHermano AS string) LIKE CONCAT('%', :texto, '%')
         )
     AND
         (:estado IS NULL OR h.estado = :estado)

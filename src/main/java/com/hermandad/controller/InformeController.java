@@ -8,16 +8,20 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import com.hermandad.report.ExcelService;
 
 @RestController
 public class InformeController {
 
     private final InformeService informeService;
+    private final ExcelService excelService;
 
     public InformeController(
-            InformeService informeService) {
+            InformeService informeService,
+            ExcelService excelService) {
 
         this.informeService = informeService;
+        this.excelService = excelService;
     }
 
     @GetMapping("/api/informes/prueba")
@@ -91,5 +95,50 @@ public class InformeController {
                 .contentType(
                         MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    @GetMapping("/api/informes/excel/hermanos")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    public ResponseEntity<byte[]> excelHermanos()
+            throws Exception {
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=hermanos.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument."
+                                + "spreadsheetml.sheet"))
+                .body(excelService.exportarHermanos());
+    }
+
+    @GetMapping("/api/informes/excel/morosos")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    public ResponseEntity<byte[]> excelMorosos()
+            throws Exception {
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=morosos.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument."
+                                + "spreadsheetml.sheet"))
+                .body(excelService.exportarMorosos());
+    }
+
+    @GetMapping("/api/informes/excel/cuotas")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    public ResponseEntity<byte[]> excelCuotas()
+            throws Exception {
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=cuotas.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument."
+                                + "spreadsheetml.sheet"))
+                .body(excelService.exportarCuotas());
     }
 }

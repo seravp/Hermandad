@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UsuarioService {
@@ -43,11 +45,30 @@ public class UsuarioService {
 
         return usuarioRepository
                 .findById(id)
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuario no encontrado"));
     }
 
     public Usuario guardar(
             Usuario usuario) {
+
+        if (usuario.getPassword() == null
+                || usuario.getPassword().isBlank()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La contraseña es obligatoria al crear un usuario");
+        }
+
+        if (usuarioRepository.existsByUsername(
+                usuario.getUsername())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Ya existe un usuario con ese nombre");
+        }
 
         usuario.setPassword(
                 passwordEncoder.encode(
@@ -69,30 +90,42 @@ public class UsuarioService {
             Long id,
             Usuario usuarioActualizado) {
 
-        Usuario usuario =
-                obtenerPorId(id);
+        Usuario usuario = obtenerPorId(id);
 
-        if (usuario.getRol() == Rol.ADMIN
-                && usuarioActualizado.getRol() != Rol.ADMIN
-                && usuarioRepository.countByRol(
-                Rol.ADMIN) <= 1) {
+        if (!usuario.getUsername().equals(
+                usuarioActualizado.getUsername())
+                && usuarioRepository.existsByUsername(
+                usuarioActualizado.getUsername())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Ya existe un usuario con ese nombre");
+        }
+
+        boolean dejaDeSerAdministrador =
+                usuario.getRol() == Rol.ADMIN
+                        && usuarioActualizado.getRol() != Rol.ADMIN;
+
+        boolean desactivaAdministrador =
+                usuario.getRol() == Rol.ADMIN
+                        && Boolean.FALSE.equals(
+                        usuarioActualizado.getActivo());
+
+        if ((dejaDeSerAdministrador || desactivaAdministrador)
+                && usuarioRepository.countByRol(Rol.ADMIN) <= 1) {
 
             throw new RuntimeException(
-                    "No se puede quitar el rol al último administrador");
+                    "No se puede desactivar ni quitar el rol al último administrador");
         }
+
+        usuario.setUsername(
+                usuarioActualizado.getUsername());
 
         usuario.setRol(
                 usuarioActualizado.getRol());
 
-        if (usuario.getRol() == Rol.ADMIN
-                && Boolean.FALSE.equals(
-                usuarioActualizado.getActivo())
-                && usuarioRepository.countByRol(
-                Rol.ADMIN) <= 1) {
-
-            throw new RuntimeException(
-                    "No se puede desactivar el último administrador");
-        }
+        usuario.setActivo(
+                usuarioActualizado.getActivo());
 
         Usuario actualizado =
                 usuarioRepository.save(usuario);
@@ -136,8 +169,9 @@ public class UsuarioService {
                 && usuarioRepository.countByRol(
                 Rol.ADMIN) <= 1) {
 
-            throw new RuntimeException(
-                    "No se puede eliminar el último administrador");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "No se puede desactivar ni quitar el rol al último administrador");
         }
 
         auditoriaService.registrar(

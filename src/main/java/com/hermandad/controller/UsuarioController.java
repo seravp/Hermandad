@@ -8,6 +8,7 @@ import com.hermandad.mapper.UsuarioMapper;
 import com.hermandad.service.UsuarioService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class UsuarioController {
 
     @PostMapping
     public UsuarioResponseDto crear(
-            @RequestBody UsuarioRequestDto dto) {
+            @Valid @RequestBody UsuarioRequestDto dto) {
 
         Usuario usuario =
                 usuarioMapper.toEntity(dto);
@@ -70,7 +71,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public UsuarioResponseDto actualizar(
             @PathVariable Long id,
-            @RequestBody UsuarioRequestDto dto) {
+            @Valid @RequestBody UsuarioRequestDto dto) {
 
         Usuario usuario =
                 usuarioMapper.toEntity(dto);
@@ -97,4 +98,6 @@ public class UsuarioController {
         return usuarioMapper.toResponse(
                 usuario);
     }
+
+
 }

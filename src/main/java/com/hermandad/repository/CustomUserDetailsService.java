@@ -1,4 +1,4 @@
-package com.hermandad.service;
+package com.hermandad.repository;
 
 import com.hermandad.entity.Usuario;
 import com.hermandad.repository.UsuarioRepository;
@@ -22,7 +22,7 @@ public class CustomUserDetailsService
             String username)
             throws UsernameNotFoundException {
 
-        System.out.println("Buscando usuario: " + username);
+
 
         Usuario usuario =
                 usuarioRepository
@@ -31,15 +31,13 @@ public class CustomUserDetailsService
                                 new UsernameNotFoundException(
                                         "Usuario no encontrado"));
 
-        System.out.println("Usuario encontrado");
-        System.out.println(usuario.getUsername());
-        System.out.println(usuario.getPassword());
-        System.out.println(usuario.getRol());
 
         return User.builder()
                 .username(usuario.getUsername())
                 .password(usuario.getPassword())
                 .roles(usuario.getRol().name())
+                .disabled(!Boolean.TRUE.equals(
+                        usuario.getActivo()))
                 .build();
     }
 

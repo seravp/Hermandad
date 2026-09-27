@@ -127,7 +127,7 @@ public class CuotaController {
     }
 
     @GetMapping("/morosos")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
     public List<MorosoDto> morosos(
             @RequestParam(required = false)
             Integer anio) {
@@ -226,5 +226,6 @@ public class CuotaController {
     public List<Integer> obtenerAniosDisponibles() {
         return cuotaService.obtenerAniosDisponibles();
     }
+
 
 }

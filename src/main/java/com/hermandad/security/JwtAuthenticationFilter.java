@@ -1,6 +1,7 @@
 package com.hermandad.security;
 
-import com.hermandad.service.CustomUserDetailsService;
+import com.hermandad.repository.CustomUserDetailsService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
 
@@ -67,9 +69,18 @@ public class JwtAuthenticationFilter
         String token =
                 authHeader.substring(7);
 
-        String username =
-                jwtService.extractUsername(
-                        token);
+        String username;
+
+        try {
+            username = jwtService.extractUsername(
+                    token);
+        } catch (JwtException | IllegalArgumentException e) {
+            filterChain.doFilter(
+                    request,
+                    response);
+
+            return;
+        }
 
         if (username != null
                 && SecurityContextHolder
@@ -77,12 +88,18 @@ public class JwtAuthenticationFilter
                 .getAuthentication()
                 == null) {
 
-            UserDetails userDetails =
-                    userDetailsService
-                            .loadUserByUsername(
-                                    username);
+            UserDetails userDetails;
 
-            if (jwtService.isTokenValid(
+            try {
+                userDetails = userDetailsService
+                        .loadUserByUsername(username);
+            } catch (UsernameNotFoundException e) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (userDetails.isEnabled()
+                    && jwtService.isTokenValid(
                     token,
                     username)) {
 
@@ -102,23 +119,6 @@ public class JwtAuthenticationFilter
                         .setAuthentication(
                                 authToken);
             }
-        }
-
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-
-            System.out.println(
-                    "Usuario autenticado: "
-                            + SecurityContextHolder
-                            .getContext()
-                            .getAuthentication()
-                            .getName());
-
-            System.out.println(
-                    "Roles: "
-                            + SecurityContextHolder
-                            .getContext()
-                            .getAuthentication()
-                            .getAuthorities());
         }
 
         filterChain.doFilter(

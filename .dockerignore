@@ -1,0 +1,12 @@
+.git
+.gitignore
+.idea
+.vscode
+
+src
+*.iml
+*.log
+
+README*
+docker-compose.yml
+Dockerfile*
