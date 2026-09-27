@@ -3,9 +3,10 @@ package com.hermandad.service;
 import com.hermandad.dto.DashboardDto;
 import com.hermandad.entity.Configuracion;
 import com.hermandad.entity.EstadoCuota;
-import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.EstadoSocio;
+import com.hermandad.entity.TipoSocio;
 import com.hermandad.repository.CuotaRepository;
-import com.hermandad.repository.HermanoRepository;
+import com.hermandad.repository.SocioRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,15 +15,15 @@ import java.util.Optional;
 @Service
 public class DashboardService {
 
-    private final HermanoRepository hermanoRepository;
+    private final SocioRepository socioRepository;
     private final CuotaRepository cuotaRepository;
     private final ConfiguracionService configuracionService;
 
-    public DashboardService(HermanoRepository hermanoRepository,
+    public DashboardService(SocioRepository socioRepository,
                             CuotaRepository cuotaRepository,
                             ConfiguracionService configuracionService) {
 
-        this.hermanoRepository = hermanoRepository;
+        this.socioRepository = socioRepository;
         this.cuotaRepository = cuotaRepository;
         this.configuracionService = configuracionService;
     }
@@ -37,7 +38,11 @@ public class DashboardService {
         DashboardDto dto = new DashboardDto();
 
 
-        dto.setTotalHermanos(hermanoRepository.countByEstado(EstadoHermano.ACTIVO));
+        dto.setTotalSocios(socioRepository.countByEstado(EstadoSocio.ACTIVO));
+        dto.setTotalHermanos(socioRepository.countByEstadoAndTipo(
+                EstadoSocio.ACTIVO, TipoSocio.HERMANO));
+        dto.setTotalCostaleros(socioRepository.countByEstadoAndTipo(
+                EstadoSocio.ACTIVO, TipoSocio.COSTALERO));
 
         dto.setCuotasPagadas(cuotaRepository.countByEstadoAndAnio(EstadoCuota.PAGADA,anio));
 

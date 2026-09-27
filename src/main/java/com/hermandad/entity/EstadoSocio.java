@@ -1,6 +1,6 @@
 package com.hermandad.entity;
 
-public enum EstadoHermano {
+public enum EstadoSocio {
     ACTIVO,
     BAJA,
     FALLECIDO,

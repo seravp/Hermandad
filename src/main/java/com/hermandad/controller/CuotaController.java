@@ -3,6 +3,7 @@ package com.hermandad.controller;
 import com.hermandad.dto.*;
 import com.hermandad.entity.Cuota;
 import com.hermandad.entity.EstadoCuota;
+import com.hermandad.entity.TipoSocio;
 import com.hermandad.mapper.CuotaMapper;
 import com.hermandad.service.CuotaService;
 import jakarta.validation.Valid;
@@ -28,13 +29,13 @@ public class CuotaController {
         this.cuotaMapper = cuotaMapper;
     }
 
-    @GetMapping("/hermano/{id}")
+    @GetMapping("/socio/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
-    public List<CuotaResponseDto> obtenerPorHermano(
+    public List<CuotaResponseDto> obtenerPorSocio(
             @PathVariable Long id) {
 
         return cuotaService
-                .obtenerPorHermano(id)
+                .obtenerPorSocio(id)
                 .stream()
                 .map(cuotaMapper::toResponse)
                 .toList();
@@ -50,7 +51,7 @@ public class CuotaController {
 
         Cuota guardada =
                 cuotaService.guardar(
-                        dto.getHermanoId(),
+                        dto.getSocioId(),
                         cuota);
 
         return cuotaMapper.toResponse(
@@ -189,6 +190,9 @@ public class CuotaController {
             @RequestParam(required = false)
             Integer anio,
 
+            @RequestParam(required = false)
+            TipoSocio tipo,
+
             @RequestParam(defaultValue = "0")
             int page,
 
@@ -206,6 +210,7 @@ public class CuotaController {
                         texto,
                         estado,
                         anio,
+                tipo,
                         page,
                         size,
                         sort,

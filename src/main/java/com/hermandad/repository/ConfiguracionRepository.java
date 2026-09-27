@@ -2,7 +2,7 @@ package com.hermandad.repository;
 
 import com.hermandad.entity.Configuracion;
 import com.hermandad.entity.EstadoCuota;
-import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.EstadoSocio;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.math.BigDecimal;

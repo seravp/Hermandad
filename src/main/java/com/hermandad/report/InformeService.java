@@ -2,9 +2,9 @@ package com.hermandad.report;
 
 import com.hermandad.dto.CartaMorosoDto;
 import com.hermandad.dto.MorosoDto;
-import com.hermandad.entity.Hermano;
+import com.hermandad.entity.Socio;
 import com.hermandad.service.CuotaService;
-import com.hermandad.service.HermanoService;
+import com.hermandad.service.SocioService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -22,14 +22,14 @@ public class InformeService {
 
     private final CuotaService cuotaService;
 
-    private final HermanoService hermanoService;
+    private final SocioService socioService;
 
     public InformeService(
             CuotaService cuotaService,
-            HermanoService hermanoService) {
+            SocioService socioService) {
 
         this.cuotaService = cuotaService;
-        this.hermanoService = hermanoService;
+        this.socioService = socioService;
     }
 
     public byte[] generarPdfPrueba() throws IOException {
@@ -118,7 +118,7 @@ public class InformeService {
                     content.newLineAtOffset(50, y);
 
                     content.showText(
-                            moroso.getNumeroHermano()
+                            moroso.getNumeroSocio()
                                     + " - "
                                     + moroso.getNombreCompleto()
                                     + " - Cuotas: "
@@ -145,8 +145,8 @@ public class InformeService {
     public byte[] generarInformeDomiciliados()
             throws IOException {
 
-        List<Hermano> domiciliados =
-                hermanoService.obtenerDomiciliados();
+        List<Socio> domiciliados =
+                socioService.obtenerDomiciliados();
 
         try (PDDocument document = new PDDocument()) {
 
@@ -171,7 +171,7 @@ public class InformeService {
                 content.newLineAtOffset(50, 750);
 
                 content.showText(
-                        "LISTADO DE HERMANOS DOMICILIADOS");
+                        "LISTADO DE SOCIOS DOMICILIADOS");
 
                 content.endText();
 
@@ -179,7 +179,7 @@ public class InformeService {
 
                 float y = 700;
 
-                for (Hermano hermano : domiciliados) {
+                for (Socio socio : domiciliados) {
 
                     content.beginText();
 
@@ -191,13 +191,13 @@ public class InformeService {
                     content.newLineAtOffset(50, y);
 
                     content.showText(
-                            hermano.getNumeroHermano()
+                            socio.getNumeroSocio()
                                     + " - "
-                                    + hermano.getNombre()
+                                    + socio.getNombre()
                                     + " "
-                                    + hermano.getApellidos()
+                                    + socio.getApellidos()
                                     + " - "
-                                    + hermano.getIban());
+                                    + socio.getIban());
 
                     content.endText();
 
@@ -215,12 +215,12 @@ public class InformeService {
     }
 
     public byte[] generarCartaMoroso(
-            Long hermanoId)
+            Long socioId)
             throws IOException {
 
         CartaMorosoDto carta =
                 cuotaService.obtenerCartaMoroso(
-                        hermanoId);
+                        socioId);
 
         try (PDDocument document = new PDDocument()) {
 
@@ -263,7 +263,7 @@ public class InformeService {
                 content.newLineAtOffset(50, y);
 
                 content.showText(
-                        "Estimado hermano "
+                        "Estimado socio "
                                 + carta.getNombreCompleto()
                                 + ":");
 

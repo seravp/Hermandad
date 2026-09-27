@@ -7,9 +7,9 @@ import java.math.BigDecimal;
 @Data
 public class MorosoDto {
 
-    private Long hermanoId;
+    private Long socioId;
 
-    private Integer numeroHermano;
+    private Integer numeroSocio;
 
     private String nombreCompleto;
 

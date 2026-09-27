@@ -1,12 +1,13 @@
 package com.hermandad.controller;
 
-import com.hermandad.entity.EstadoHermano;
-import com.hermandad.entity.Hermano;
-import com.hermandad.service.HermanoService;
+import com.hermandad.entity.EstadoSocio;
+import com.hermandad.entity.Socio;
+import com.hermandad.entity.TipoSocio;
+import com.hermandad.service.SocioService;
 
-import com.hermandad.dto.HermanoRequestDto;
-import com.hermandad.dto.HermanoResponseDto;
-import com.hermandad.mapper.HermanoMapper;
+import com.hermandad.dto.SocioRequestDto;
+import com.hermandad.dto.SocioResponseDto;
+import com.hermandad.mapper.SocioMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,110 +18,113 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
-@Tag(name = "Hermanos")
+@Tag(name = "Socios")
 @RestController
-@RequestMapping("/api/hermanos")
-public class HermanoController {
-    private final HermanoMapper hermanoMapper;
-    private final HermanoService hermanoService;
+@RequestMapping("/api/socios")
+public class SocioController {
+    private final SocioMapper socioMapper;
+    private final SocioService socioService;
 
-    public HermanoController(
-            HermanoService hermanoService,
-            HermanoMapper hermanoMapper) {
+    public SocioController(
+            SocioService socioService,
+            SocioMapper socioMapper) {
 
-        this.hermanoService = hermanoService;
-        this.hermanoMapper = hermanoMapper;
+        this.socioService = socioService;
+        this.socioMapper = socioMapper;
     }
 
-    @Operation(summary = "Obtener todos los hermanos")
+    @Operation(summary = "Obtener todos los socios")
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public List<HermanoResponseDto> obtenerTodos() {
+    public List<SocioResponseDto> obtenerTodos() {
 
-        return hermanoService.obtenerTodos()
+        return socioService.obtenerTodos()
                 .stream()
-                .map(hermanoMapper::toResponse)
+                .map(socioMapper::toResponse)
                 .toList();
     }
 
-    @Operation(summary = "Obtener hermano por id")
+    @Operation(summary = "Obtener socio por id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public HermanoResponseDto obtenerPorId(
+    public SocioResponseDto obtenerPorId(
             @PathVariable Long id) {
 
-        Hermano hermano = hermanoService.obtenerPorId(id);
+        Socio socio = socioService.obtenerPorId(id);
 
-        return hermanoMapper.toResponse(hermano);
+        return socioMapper.toResponse(socio);
     }
 
-    @Operation(summary = "Obtener hermano por DNI")
+    @Operation(summary = "Obtener socio por DNI")
     @GetMapping("/dni/{dni}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public HermanoResponseDto buscarPorDni(
+    public SocioResponseDto buscarPorDni(
             @PathVariable String dni) {
 
-        Hermano hermano = hermanoService.buscarPorDni(dni);
+        Socio socio = socioService.buscarPorDni(dni);
 
-        return hermanoMapper.toResponse(hermano);
+        return socioMapper.toResponse(socio);
     }
 
-    @Operation(summary = "Obtener hermano por estado")
+    @Operation(summary = "Obtener socio por estado")
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public List<HermanoResponseDto> buscarPorEstado(
-            @PathVariable EstadoHermano estado) {
+    public List<SocioResponseDto> buscarPorEstado(
+            @PathVariable EstadoSocio estado) {
 
-        return hermanoService.buscarPorEstado(estado)
+        return socioService.buscarPorEstado(estado)
                 .stream()
-                .map(hermanoMapper::toResponse)
+                .map(socioMapper::toResponse)
                 .toList();
     }
 
-    @Operation(summary = "Obtener hermano por apellidos")
+    @Operation(summary = "Obtener socio por apellidos")
     @GetMapping("/apellidos/{apellidos}")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public List<HermanoResponseDto> buscarPorApellidos(
+    public List<SocioResponseDto> buscarPorApellidos(
             @PathVariable String apellidos) {
 
-        return hermanoService.buscarPorApellidos(apellidos)
+        return socioService.buscarPorApellidos(apellidos)
                 .stream()
-                .map(hermanoMapper::toResponse)
+                .map(socioMapper::toResponse)
                 .toList();
     }
 
     @GetMapping("/paginado")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public Page<HermanoResponseDto> obtenerPaginados(
+    public Page<SocioResponseDto> obtenerPaginados(
 
             @RequestParam(defaultValue = "0") int page,
 
             @RequestParam(defaultValue = "10") int size,
 
-            @RequestParam(defaultValue = "numeroHermano")
+            @RequestParam(defaultValue = "numeroSocio")
             String sort,
 
             @RequestParam(defaultValue = "asc")
             String direction) {
 
-        return hermanoService
+        return socioService
                 .obtenerPaginados(
                         page,
                         size,
                         sort,
                         direction)
-                .map(hermanoMapper::toResponse);
+                .map(socioMapper::toResponse);
     }
 
     @GetMapping("/busqueda-paginada")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public Page<HermanoResponseDto> buscarPaginado(
+    public Page<SocioResponseDto> buscarPaginado(
 
             @RequestParam(required = false)
             String texto,
 
             @RequestParam(required = false)
-            EstadoHermano estado,
+            EstadoSocio estado,
+
+            @RequestParam(required = false)
+            TipoSocio tipo,
 
             @RequestParam(defaultValue = "0")
             int page,
@@ -128,64 +132,65 @@ public class HermanoController {
             @RequestParam(defaultValue = "10")
             int size,
 
-            @RequestParam(defaultValue = "numeroHermano")
+            @RequestParam(defaultValue = "numeroSocio")
             String sort,
 
             @RequestParam(defaultValue = "asc")
             String direction) {
 
-        return hermanoService
+        return socioService
                 .buscarPaginado(
                         texto,
                         estado,
+                        tipo,
                         page,
                         size,
                         sort,
                         direction)
-                .map(hermanoMapper::toResponse);
+                .map(socioMapper::toResponse);
     }
 
     @GetMapping("/domiciliados")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
-    public List<HermanoResponseDto> domiciliados() {
+    public List<SocioResponseDto> domiciliados() {
 
-        return hermanoService
+        return socioService
                 .obtenerDomiciliados()
                 .stream()
-                .map(hermanoMapper::toResponse)
+                .map(socioMapper::toResponse)
                 .toList();
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
-    public HermanoResponseDto crear(
-            @Valid @RequestBody HermanoRequestDto dto) {
+    public SocioResponseDto crear(
+            @Valid @RequestBody SocioRequestDto dto) {
 
-        Hermano hermano = hermanoMapper.toEntity(dto);
+        Socio socio = socioMapper.toEntity(dto);
 
-        Hermano guardado = hermanoService.guardar(hermano);
+        Socio guardado = socioService.guardar(socio);
 
-        return hermanoMapper.toResponse(guardado);
+        return socioMapper.toResponse(guardado);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
-    public HermanoResponseDto actualizar(
+    public SocioResponseDto actualizar(
             @PathVariable Long id,
-            @Valid @RequestBody HermanoRequestDto dto) {
+            @Valid @RequestBody SocioRequestDto dto) {
 
-        Hermano hermano = hermanoMapper.toEntity(dto);
+        Socio socio = socioMapper.toEntity(dto);
 
-        Hermano actualizado =
-                hermanoService.actualizar(id, hermano);
+        Socio actualizado =
+                socioService.actualizar(id, socio);
 
-        return hermanoMapper.toResponse(actualizado);
+        return socioMapper.toResponse(actualizado);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
     public void eliminar(@PathVariable Long id) {
 
-        hermanoService.eliminar(id);
+        socioService.eliminar(id);
     }
 }

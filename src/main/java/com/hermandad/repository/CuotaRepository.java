@@ -2,6 +2,7 @@ package com.hermandad.repository;
 
 import com.hermandad.entity.Cuota;
 import com.hermandad.entity.EstadoCuota;
+import com.hermandad.entity.TipoSocio;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,11 +16,11 @@ import java.util.List;
 public interface CuotaRepository
         extends JpaRepository<Cuota, Long> {
 
-    List<Cuota> findByHermanoId(Long hermanoId);
+    List<Cuota> findBySocioId(Long socioId);
 
     List<Cuota> findByEstado(EstadoCuota estado);
 
-    boolean existsByHermanoIdAndAnio(Long hermanoId, Integer anio);
+    boolean existsBySocioIdAndAnio(Long socioId, Integer anio);
 
     long countByEstado(EstadoCuota estado);
 
@@ -40,20 +41,22 @@ public interface CuotaRepository
     @Query("""
     SELECT c
     FROM Cuota c
-    JOIN c.hermano h
+    JOIN c.socio h
     WHERE
     (
         LOWER(h.nombre) LIKE LOWER(CONCAT('%', :texto, '%'))
         OR LOWER(h.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))
-        OR CAST(h.numeroHermano AS string) LIKE CONCAT('%', :texto, '%')
+        OR CAST(h.numeroSocio AS string) LIKE CONCAT('%', :texto, '%')
     )
     AND (:estado IS NULL OR c.estado = :estado)
     AND (:anio IS NULL OR c.anio = :anio)
+    AND (:tipo IS NULL OR c.tipo = :tipo)
     """)
     Page<Cuota> buscar(
             @Param("texto") String texto,
             @Param("estado") EstadoCuota estado,
             @Param("anio") Integer anio,
+            @Param("tipo") TipoSocio tipo,
             Pageable pageable);
 
     @Query("""
@@ -78,7 +81,7 @@ public interface CuotaRepository
             Integer anio);
 
     @Query("""
-        SELECT COUNT(DISTINCT c.hermano.id)
+        SELECT COUNT(DISTINCT c.socio.id)
         FROM Cuota c
         WHERE c.estado = 'PENDIENTE'
         AND c.anio = :anio

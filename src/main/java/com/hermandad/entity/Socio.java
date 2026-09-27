@@ -13,8 +13,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "hermanos")
-public class Hermano {
+@Table(name = "socios")
+public class Socio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,7 +33,7 @@ public class Hermano {
     private String email;
 
     @Column(unique = true)
-    private Integer numeroHermano;
+    private Integer numeroSocio;
 
     private String telefono;
 
@@ -44,14 +44,18 @@ public class Hermano {
     private LocalDate fechaAlta;
 
     @Enumerated(EnumType.STRING)
-    private EstadoHermano estado;
+    private EstadoSocio estado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoSocio tipo;
 
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaModificacion;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "hermano")
+    @OneToMany(mappedBy = "socio")
     private List<Cuota> cuotas;
 
     @Size(max = 34)
@@ -62,6 +66,6 @@ public class Hermano {
     @Enumerated(EnumType.STRING)
     private FormaPago formaPago;
 
-    public Hermano() {
+    public Socio() {
     }
 }

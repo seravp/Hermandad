@@ -1,12 +1,13 @@
 package com.hermandad.service;
 
-import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.EstadoSocio;
 import com.hermandad.entity.FormaPago;
-import com.hermandad.entity.Hermano;
+import com.hermandad.entity.Socio;
+import com.hermandad.entity.TipoSocio;
 import com.hermandad.exception.BusinessException;
 import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.exception.DniDuplicadoException;
-import com.hermandad.repository.HermanoRepository;
+import com.hermandad.repository.SocioRepository;
 import com.hermandad.exception.RecursoNoEncontradoException;
 
 import java.time.LocalDateTime;
@@ -23,12 +24,12 @@ import org.springframework.data.domain.Sort;
 
 
 @Service
-public class HermanoService {
+public class SocioService {
 
-    private final HermanoRepository hermanoRepository;
+    private final SocioRepository socioRepository;
 
     private static final Set<String> CAMPOS_ORDENABLES = Set.of(
-            "numeroHermano",
+            "numeroSocio",
             "nombre",
             "apellidos",
             "dni",
@@ -38,65 +39,67 @@ public class HermanoService {
 
     private final AuditoriaService auditoriaService;
 
-    public HermanoService(
-            HermanoRepository hermanoRepository,
+    public SocioService(
+            SocioRepository socioRepository,
             AuditoriaService auditoriaService) {
 
-        this.hermanoRepository = hermanoRepository;
+        this.socioRepository = socioRepository;
         this.auditoriaService = auditoriaService;
     }
 
-    public List<Hermano> obtenerTodos() {
-        return hermanoRepository.findAll();
+    public List<Socio> obtenerTodos() {
+        return socioRepository.findAll();
     }
 
-    public Hermano guardar(Hermano hermano) {
+    public Socio guardar(Socio socio) {
 
-        if (hermanoRepository.existsByDni(hermano.getDni())) {
-            throw new DniDuplicadoException(hermano.getDni());
+        validarTipo(socio.getTipo());
+
+        if (socioRepository.existsByDni(socio.getDni())) {
+            throw new DniDuplicadoException(socio.getDni());
         }
 
         Integer ultimoNumero =
-                hermanoRepository.obtenerUltimoNumeroHermano();
+                socioRepository.obtenerUltimoNumeroSocio();
 
-        hermano.setNumeroHermano(ultimoNumero + 1);
+        socio.setNumeroSocio(ultimoNumero + 1);
 
-        hermano.setFechaAlta(LocalDate.now());
+        socio.setFechaAlta(LocalDate.now());
 
-        hermano.setFechaCreacion(LocalDateTime.now());
+        socio.setFechaCreacion(LocalDateTime.now());
 
-        hermano.setFechaModificacion(LocalDateTime.now());
+        socio.setFechaModificacion(LocalDateTime.now());
 
-        Hermano guardado =
-                hermanoRepository.save(hermano);
+        Socio guardado =
+                socioRepository.save(socio);
 
         auditoriaService.registrar(
                 "CREAR",
-                "HERMANO",
+                "SOCIO",
                 guardado.getId());
 
         return guardado;
     }
 
-    public Hermano obtenerPorId(Long id) {
+    public Socio obtenerPorId(Long id) {
 
-        return hermanoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Hermano no encontrado"));
+        return socioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Socio no encontrado"));
     }
 
-    public Hermano actualizar(Long id, Hermano datos) {
+    public Socio actualizar(Long id, Socio datos) {
 
-        Hermano hermano = hermanoRepository.findById(id)
+        Socio socio = socioRepository.findById(id)
                 .orElseThrow(() ->
-                        new RecursoNoEncontradoException("Hermano no encontrado"));
+                        new RecursoNoEncontradoException("Socio no encontrado"));
 
-        hermano.setNombre(datos.getNombre());
-        hermano.setApellidos(datos.getApellidos());
+        socio.setNombre(datos.getNombre());
+        socio.setApellidos(datos.getApellidos());
 
         // Si finalmente decides permitir editar el DNI
 
-        if (!hermano.getDni().equals(datos.getDni())
-                && hermanoRepository.existsByDni(datos.getDni())) {
+        if (!socio.getDni().equals(datos.getDni())
+                && socioRepository.existsByDni(datos.getDni())) {
 
             throw new DniDuplicadoException(datos.getDni());
 
@@ -108,34 +111,36 @@ public class HermanoService {
             throw new BusinessException("El formato del IBAN no es válido.");
         }
 
-        hermano.setDni(datos.getDni());
+        socio.setDni(datos.getDni());
 
-        hermano.setTelefono(datos.getTelefono());
-        hermano.setEmail(datos.getEmail());
-        hermano.setDireccion(datos.getDireccion());
+        socio.setTelefono(datos.getTelefono());
+        socio.setEmail(datos.getEmail());
+        socio.setDireccion(datos.getDireccion());
 
-        hermano.setFechaNacimiento(datos.getFechaNacimiento());
+        socio.setFechaNacimiento(datos.getFechaNacimiento());
 
-        hermano.setEstado(datos.getEstado());
-        hermano.setFormaPago(datos.getFormaPago());
+        socio.setEstado(datos.getEstado());
+        validarTipo(datos.getTipo());
+        socio.setTipo(datos.getTipo());
+        socio.setFormaPago(datos.getFormaPago());
 
         if (datos.getFormaPago() == FormaPago.EFECTIVO) {
-            hermano.setIban(null);
-            hermano.setTitularCuenta(null);
+            socio.setIban(null);
+            socio.setTitularCuenta(null);
         } else {
-            hermano.setIban(iban);
-            hermano.setTitularCuenta(datos.getTitularCuenta());
+            socio.setIban(iban);
+            socio.setTitularCuenta(datos.getTitularCuenta());
         }
 
-        hermano.setFechaModificacion(LocalDateTime.now());
+        socio.setFechaModificacion(LocalDateTime.now());
 
-        Hermano actualizado = hermanoRepository.save(hermano);
+        Socio actualizado = socioRepository.save(socio);
 
 
 
         auditoriaService.registrar(
                 "MODIFICAR",
-                "HERMANO",
+                "SOCIO",
                 actualizado.getId());
 
         return actualizado;
@@ -143,39 +148,39 @@ public class HermanoService {
 
     public void eliminar(Long id) {
 
-        Hermano hermano = hermanoRepository.findById(id)
+        Socio socio = socioRepository.findById(id)
                 .orElseThrow(() ->
-                        new RecursoNoEncontradoException("Hermano no encontrado"));
+                        new RecursoNoEncontradoException("Socio no encontrado"));
 
         auditoriaService.registrar(
                 "ELIMINAR",
-                "HERMANO",
-                hermano.getId());
+                "SOCIO",
+                socio.getId());
 
-        hermanoRepository.delete(hermano);
+        socioRepository.delete(socio);
     }
 
-    public Hermano buscarPorDni(String dni) {
+    public Socio buscarPorDni(String dni) {
 
-        return hermanoRepository.findByDni(dni)
+        return socioRepository.findByDni(dni)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException(
-                                "Hermano no encontrado"));
+                                "Socio no encontrado"));
     }
 
-    public List<Hermano> buscarPorEstado(
-            EstadoHermano estado) {
+    public List<Socio> buscarPorEstado(
+            EstadoSocio estado) {
 
-        return hermanoRepository.findByEstado(estado);
+        return socioRepository.findByEstado(estado);
     }
 
-    public List<Hermano> buscarPorApellidos(String apellidos) {
+    public List<Socio> buscarPorApellidos(String apellidos) {
 
-        return hermanoRepository
+        return socioRepository
                 .findByApellidosContainingIgnoreCase(apellidos);
     }
 
-    public Page<Hermano> obtenerPaginados(
+    public Page<Socio> obtenerPaginados(
             int page,
             int size,
             String sort,
@@ -198,12 +203,13 @@ public class HermanoService {
                         Sort.by(direccion, sort)
                 );
 
-        return hermanoRepository.findAll(pageable);
+        return socioRepository.findAll(pageable);
     }
 
-    public Page<Hermano> buscarPaginado(
+    public Page<Socio> buscarPaginado(
             String texto,
-            EstadoHermano estado,
+            EstadoSocio estado,
+            TipoSocio tipo,
             int page,
             int size,
             String sort,
@@ -229,16 +235,23 @@ public class HermanoService {
                         size,
                         Sort.by(direccion, sort));
 
-        return hermanoRepository.buscar(
+        return socioRepository.buscar(
                 texto,
                 estado,
+                tipo,
                 pageable);
     }
 
 
-    public List<Hermano> obtenerDomiciliados() {
+    public List<Socio> obtenerDomiciliados() {
 
-        return hermanoRepository.findByFormaPago(
+        return socioRepository.findByFormaPago(
                 FormaPago.DOMICILIACION);
+    }
+
+    private void validarTipo(TipoSocio tipo) {
+        if (tipo == null) {
+            throw new BusinessException("Debe seleccionarse si el socio es hermano o costalero.");
+        }
     }
 }

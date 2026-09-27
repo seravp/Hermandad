@@ -1,7 +1,8 @@
 package com.hermandad.dto;
 
-import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.EstadoSocio;
 import com.hermandad.entity.FormaPago;
+import com.hermandad.entity.TipoSocio;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({
         "id",
-        "numeroHermano",
+        "numeroSocio",
         "nombre",
         "apellidos",
         "dni",
@@ -22,11 +23,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "estado"
 })
 @Data
-public class HermanoResponseDto {
+public class SocioResponseDto {
 
     private Long id;
 
-    private Integer numeroHermano;
+    private Integer numeroSocio;
 
     private String nombre;
 
@@ -44,7 +45,9 @@ public class HermanoResponseDto {
 
     private LocalDate fechaAlta;
 
-    private EstadoHermano estado;
+    private EstadoSocio estado;
+
+    private TipoSocio tipo;
 
     private LocalDateTime fechaCreacion;
 

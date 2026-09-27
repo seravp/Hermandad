@@ -9,7 +9,7 @@ import com.hermandad.exception.BusinessException;
 import com.hermandad.exception.CampoOrdenacionInvalidoException;
 import com.hermandad.exception.RecursoNoEncontradoException;
 import com.hermandad.repository.CuotaRepository;
-import com.hermandad.repository.HermanoRepository;
+import com.hermandad.repository.SocioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class CuotaService {
 
     private final CuotaRepository cuotaRepository;
-    private final HermanoRepository hermanoRepository;
+    private final SocioRepository socioRepository;
     private final AuditoriaService auditoriaService;
     private final ConfiguracionService configuracionService;
 
@@ -37,28 +37,28 @@ public class CuotaService {
             "importe",
             "estado",
             "fechaPago",
-            "numeroHermano"
+            "numeroSocio"
     );
 
     public CuotaService(
             CuotaRepository cuotaRepository,
-            HermanoRepository hermanoRepository,
+            SocioRepository socioRepository,
             AuditoriaService auditoriaService,
             ConfiguracionService configuracionService) {
 
         this.cuotaRepository = cuotaRepository;
-        this.hermanoRepository = hermanoRepository;
+        this.socioRepository = socioRepository;
         this.auditoriaService = auditoriaService;
         this.configuracionService = configuracionService;
     }
 
     public Cuota guardar(
-            Long hermanoId,
+            Long socioId,
             Cuota cuota) {
 
-        if (hermanoId == null) {
+        if (socioId == null) {
             throw new BusinessException(
-                    "Debe seleccionarse un hermano.");
+                    "Debe seleccionarse un socio.");
         }
 
         if (cuota.getAnio() == null) {
@@ -75,22 +75,23 @@ public class CuotaService {
         }
 
         if (cuotaRepository
-                .existsByHermanoIdAndAnio(
-                        hermanoId,
+                .existsBySocioIdAndAnio(
+                        socioId,
                         cuota.getAnio())) {
 
             throw new BusinessException(
-                    "El hermano ya tiene una cuota para el año "
+                    "El socio ya tiene una cuota para el año "
                             + cuota.getAnio() + ".");
         }
 
-        Hermano hermano =
-                hermanoRepository.findById(hermanoId)
+        Socio socio =
+                socioRepository.findById(socioId)
                         .orElseThrow(() ->
                                 new RecursoNoEncontradoException(
-                                        "Hermano no encontrado"));
+                                        "Socio no encontrado"));
 
-        cuota.setHermano(hermano);
+        cuota.setSocio(socio);
+        cuota.setTipo(socio.getTipo());
         cuota.setEstado(EstadoCuota.PENDIENTE);
         cuota.setFechaPago(null);
 
@@ -105,11 +106,11 @@ public class CuotaService {
         return guardada;
     }
 
-    public List<Cuota> obtenerPorHermano(
-            Long hermanoId) {
+    public List<Cuota> obtenerPorSocio(
+            Long socioId) {
 
-        return cuotaRepository.findByHermanoId(
-                hermanoId);
+        return cuotaRepository.findBySocioId(
+                socioId);
     }
 
     public Cuota pagar(Long id) {
@@ -201,30 +202,28 @@ public class CuotaService {
 
         Configuracion configuracion = configuracionService.obtenerConfiguracion();
 
-        BigDecimal importe =
-                configuracion.getImporteCuota();
-
-        List<Hermano> hermanos =
-                hermanoRepository.findByEstado(
-                        EstadoHermano.ACTIVO);
+        List<Socio> socios =
+                socioRepository.findByEstado(
+                        EstadoSocio.ACTIVO);
 
         int creadas = 0;
 
-        for (Hermano hermano : hermanos) {
+        for (Socio socio : socios) {
 
             boolean existe =
                     cuotaRepository
-                            .existsByHermanoIdAndAnio(
-                                    hermano.getId(),
+                            .existsBySocioIdAndAnio(
+                                    socio.getId(),
                                     anio);
 
             if (!existe) {
 
                 Cuota cuota = new Cuota();
 
-                cuota.setHermano(hermano);
+                cuota.setSocio(socio);
                 cuota.setAnio(anio);
-                cuota.setImporte(importe);
+                cuota.setTipo(socio.getTipo());
+                cuota.setImporte(obtenerImporte(configuracion, socio.getTipo()));
 
                 cuota.setEstado(
                         EstadoCuota.PENDIENTE);
@@ -303,29 +302,29 @@ public class CuotaService {
         Map<Long, List<Cuota>> agrupadas =
                 cuotasPendientes.stream()
                         .collect(Collectors.groupingBy(
-                                c -> c.getHermano().getId()));
+                                c -> c.getSocio().getId()));
 
         List<MorosoDto> resultado =
                 new ArrayList<>();
 
         for (List<Cuota> cuotas : agrupadas.values()) {
 
-            Hermano hermano =
-                    cuotas.getFirst().getHermano();
+            Socio socio =
+                    cuotas.getFirst().getSocio();
 
             MorosoDto dto =
                     new MorosoDto();
 
-            dto.setHermanoId(
-                    hermano.getId());
+            dto.setSocioId(
+                    socio.getId());
 
-            dto.setNumeroHermano(
-                    hermano.getNumeroHermano());
+            dto.setNumeroSocio(
+                    socio.getNumeroSocio());
 
             dto.setNombreCompleto(
-                    hermano.getNombre()
+                    socio.getNombre()
                             + " "
-                            + hermano.getApellidos());
+                            + socio.getApellidos());
 
             dto.setCuotasPendientes(
                     (long) cuotas.size());
@@ -344,10 +343,10 @@ public class CuotaService {
     }
 
     public CartaMorosoDto obtenerCartaMoroso(
-            Long hermanoId) {
+            Long socioId) {
         List<Cuota> cuotas =
-                cuotaRepository.findByHermanoId(
-                                hermanoId)
+                cuotaRepository.findBySocioId(
+                                socioId)
                         .stream()
                         .filter(c ->
                                 c.getEstado()
@@ -357,19 +356,19 @@ public class CuotaService {
         if (cuotas.isEmpty()) {
 
             throw new RecursoNoEncontradoException(
-                    "El hermano no tiene cuotas pendientes");
+                    "El socio no tiene cuotas pendientes");
         }
 
-        Hermano hermano =
-                cuotas.get(0).getHermano();
+        Socio socio =
+                cuotas.get(0).getSocio();
 
         CartaMorosoDto dto =
                 new CartaMorosoDto();
 
         dto.setNombreCompleto(
-                hermano.getNombre()
+                socio.getNombre()
                         + " "
-                        + hermano.getApellidos());
+                        + socio.getApellidos());
 
         dto.setCuotasPendientes(
                 (long) cuotas.size());
@@ -389,8 +388,8 @@ public class CuotaService {
         DashboardDto dto =
                 new DashboardDto();
 
-        dto.setTotalHermanos(
-                hermanoRepository.count());
+        dto.setTotalSocios(
+                socioRepository.count());
 
         dto.setCuotasPagadas(
                 cuotaRepository.countByEstado(
@@ -493,9 +492,9 @@ public class CuotaService {
 
         String campoOrden = switch (sort) {
 
-            case "numeroHermano" -> "hermano.numeroHermano";
+            case "numeroSocio" -> "socio.numeroSocio";
 
-            case "nombreHermano" -> "hermano.nombre";
+            case "nombreSocio" -> "socio.nombre";
 
             default -> sort;
 
@@ -514,6 +513,7 @@ public class CuotaService {
             String texto,
             EstadoCuota estado,
             Integer anio,
+            TipoSocio tipo,
             int page,
             int size,
             String sort,
@@ -534,8 +534,8 @@ public class CuotaService {
                         : Sort.Direction.ASC;
 
         String campoOrden = switch (sort) {
-            case "numeroHermano" -> "hermano.numeroHermano";
-            case "nombreHermano" -> "hermano.nombre";
+            case "numeroSocio" -> "socio.numeroSocio";
+            case "nombreSocio" -> "socio.nombre";
             default -> sort;
         };
 
@@ -549,6 +549,7 @@ public class CuotaService {
                 texto,
                 estado,
                 anio,
+                tipo,
                 pageable);
     }
 
@@ -560,5 +561,11 @@ public class CuotaService {
         return cuotaRepository.findById(id)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Cuota no encontrada"));
+    }
+
+    private BigDecimal obtenerImporte(Configuracion configuracion, TipoSocio tipo) {
+        return tipo == TipoSocio.HERMANO
+                ? configuracion.getImporteCuotaHermano()
+                : configuracion.getImporteCuotaCostalero();
     }
 }

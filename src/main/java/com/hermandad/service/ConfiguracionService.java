@@ -30,7 +30,8 @@ public class ConfiguracionService {
 
         configuracion.setId(1L);
         configuracion.setNombreHermandad("Mi Hermandad");
-        configuracion.setImporteCuota(BigDecimal.valueOf(50));
+        configuracion.setImporteCuotaHermano(BigDecimal.valueOf(50));
+        configuracion.setImporteCuotaCostalero(BigDecimal.valueOf(50));
         configuracion.setAnioActivo(Year.now().getValue());
 
         return configuracionRepository.save(configuracion);
@@ -40,11 +41,13 @@ public class ConfiguracionService {
 
         Configuracion configuracion = obtenerConfiguracion();
 
-        if (dto.getImporteCuota() == null
-                || dto.getImporteCuota().compareTo(BigDecimal.ZERO) <= 0) {
+        if (dto.getImporteCuotaHermano() == null
+                || dto.getImporteCuotaHermano().compareTo(BigDecimal.ZERO) <= 0
+                || dto.getImporteCuotaCostalero() == null
+                || dto.getImporteCuotaCostalero().compareTo(BigDecimal.ZERO) <= 0) {
 
             throw new BusinessException(
-                    "El importe de la cuota debe ser mayor que cero.");
+                    "Los importes de las cuotas deben ser mayores que cero.");
         }
 
         if (dto.getAnioActivo() == null
@@ -78,7 +81,8 @@ public class ConfiguracionService {
         }
 
         configuracion.setNombreHermandad(dto.getNombreHermandad());
-        configuracion.setImporteCuota(dto.getImporteCuota());
+        configuracion.setImporteCuotaHermano(dto.getImporteCuotaHermano());
+        configuracion.setImporteCuotaCostalero(dto.getImporteCuotaCostalero());
         configuracion.setAnioActivo(dto.getAnioActivo());
         configuracion.setCif(dto.getCif());
         configuracion.setDireccion(dto.getDireccion());

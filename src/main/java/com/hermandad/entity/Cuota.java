@@ -26,7 +26,11 @@ public class Cuota {
 
     private String observaciones;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoSocio tipo;
+
     @ManyToOne
-    @JoinColumn(name = "hermano_id")
-    private Hermano hermano;
+    @JoinColumn(name = "socio_id")
+    private Socio socio;
 }

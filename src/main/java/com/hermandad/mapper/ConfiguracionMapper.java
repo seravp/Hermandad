@@ -16,7 +16,8 @@ public class ConfiguracionMapper {
         configuracion.setDireccion(dto.getDireccion());
         configuracion.setTelefono(dto.getTelefono());
         configuracion.setEmail(dto.getEmail());
-        configuracion.setImporteCuota(dto.getImporteCuota());
+        configuracion.setImporteCuotaHermano(dto.getImporteCuotaHermano());
+        configuracion.setImporteCuotaCostalero(dto.getImporteCuotaCostalero());
         configuracion.setAnioActivo(dto.getAnioActivo());
         configuracion.setIban(dto.getIban());
 
@@ -32,7 +33,8 @@ public class ConfiguracionMapper {
         dto.setDireccion(configuracion.getDireccion());
         dto.setTelefono(configuracion.getTelefono());
         dto.setEmail(configuracion.getEmail());
-        dto.setImporteCuota(configuracion.getImporteCuota());
+        dto.setImporteCuotaHermano(configuracion.getImporteCuotaHermano());
+        dto.setImporteCuotaCostalero(configuracion.getImporteCuotaCostalero());
         dto.setAnioActivo(configuracion.getAnioActivo());
         dto.setIban(configuracion.getIban());
 

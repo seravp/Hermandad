@@ -18,20 +18,20 @@ public class ExportacionController {
         this.excelService = excelService;
     }
 
-    @GetMapping("/api/exportaciones/hermanos")
+    @GetMapping("/api/exportaciones/socios")
     @PreAuthorize(
             "hasAnyRole('ADMIN','SECRETARIO')")
     public ResponseEntity<byte[]>
-    exportarHermanos()
+    exportarSocios()
             throws Exception {
 
         byte[] excel =
-                excelService.exportarHermanos();
+                excelService.exportarSocios();
 
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=hermanos.xlsx")
+                        "attachment; filename=socios.xlsx")
                 .header(
                         HttpHeaders.CONTENT_TYPE,
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

@@ -2,9 +2,9 @@ package com.hermandad.report;
 
 import com.hermandad.dto.MorosoDto;
 import com.hermandad.entity.Cuota;
-import com.hermandad.entity.Hermano;
+import com.hermandad.entity.Socio;
 import com.hermandad.service.CuotaService;
-import com.hermandad.service.HermanoService;
+import com.hermandad.service.SocioService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -15,30 +15,30 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    private final HermanoService hermanoService;
+    private final SocioService socioService;
 
     private final CuotaService cuotaService;
 
     public ExcelService(
-            HermanoService hermanoService,
+            SocioService socioService,
             CuotaService cuotaService) {
 
-        this.hermanoService = hermanoService;
+        this.socioService = socioService;
         this.cuotaService = cuotaService;
     }
 
-    public byte[] exportarHermanos()
+    public byte[] exportarSocios()
             throws Exception {
 
-        List<Hermano> hermanos =
-                hermanoService.obtenerTodos();
+        List<Socio> socios =
+                socioService.obtenerTodos();
 
         try (Workbook workbook =
                      new XSSFWorkbook()) {
 
             Sheet sheet =
                     workbook.createSheet(
-                            "Hermanos");
+                            "Socios");
 
             Row cabecera =
                     sheet.createRow(0);
@@ -60,31 +60,33 @@ public class ExcelService {
 
             int fila = 1;
 
-            for (Hermano hermano : hermanos) {
+            for (Socio socio : socios) {
 
                 Row row =
                         sheet.createRow(fila++);
 
                 row.createCell(0)
                         .setCellValue(
-                                hermano.getNumeroHermano());
+                                socio.getNumeroSocio() != null
+                                        ? socio.getNumeroSocio()
+                                        : 0);
 
                 row.createCell(1)
                         .setCellValue(
-                                hermano.getNombre());
+                                socio.getNombre());
 
                 row.createCell(2)
                         .setCellValue(
-                                hermano.getApellidos());
+                                socio.getApellidos());
 
                 row.createCell(3)
                         .setCellValue(
-                                hermano.getDni());
+                                socio.getDni());
 
                 row.createCell(4)
                         .setCellValue(
-                                hermano.getEstado() != null
-                                        ? hermano.getEstado().name()
+                                socio.getEstado() != null
+                                        ? socio.getEstado().name()
                                         : "");
             }
 
@@ -138,7 +140,7 @@ public class ExcelService {
 
                 row.createCell(0)
                         .setCellValue(
-                                moroso.getNumeroHermano());
+                                moroso.getNumeroSocio());
 
                 row.createCell(1)
                         .setCellValue(
@@ -183,7 +185,7 @@ public class ExcelService {
                     sheet.createRow(0);
 
             cabecera.createCell(0)
-                    .setCellValue("Hermano");
+                    .setCellValue("Socio");
 
             cabecera.createCell(1)
                     .setCellValue("Número");
@@ -209,13 +211,13 @@ public class ExcelService {
 
                 row.createCell(0)
                         .setCellValue(
-                                cuota.getHermano().getNombre()
+                                cuota.getSocio().getNombre()
                                         + " "
-                                        + cuota.getHermano().getApellidos());
+                                        + cuota.getSocio().getApellidos());
 
                 row.createCell(1)
                         .setCellValue(
-                                cuota.getHermano().getNumeroHermano());
+                                cuota.getSocio().getNumeroSocio());
 
                 row.createCell(2)
                         .setCellValue(

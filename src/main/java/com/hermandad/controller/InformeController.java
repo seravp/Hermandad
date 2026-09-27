@@ -97,19 +97,19 @@ public class InformeController {
                 .body(pdf);
     }
 
-    @GetMapping("/api/informes/excel/hermanos")
+    @GetMapping("/api/informes/excel/socios")
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
-    public ResponseEntity<byte[]> excelHermanos()
+    public ResponseEntity<byte[]> excelSocios()
             throws Exception {
 
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=hermanos.xlsx")
+                        "attachment; filename=socios.xlsx")
                 .contentType(MediaType.parseMediaType(
                         "application/vnd.openxmlformats-officedocument."
                                 + "spreadsheetml.sheet"))
-                .body(excelService.exportarHermanos());
+                .body(excelService.exportarSocios());
     }
 
     @GetMapping("/api/informes/excel/morosos")

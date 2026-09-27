@@ -1,7 +1,8 @@
 package com.hermandad.dto;
 
-import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.EstadoSocio;
 import com.hermandad.entity.FormaPago;
+import com.hermandad.entity.TipoSocio;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 
 
 @Data
-public class HermanoRequestDto {
+public class SocioRequestDto {
 
 
     @NotBlank(message = "El nombre es obligatorio")
@@ -29,7 +30,9 @@ public class HermanoRequestDto {
 
     private LocalDate fechaNacimiento;
 
-    private EstadoHermano estado;
+    private EstadoSocio estado;
+
+    private TipoSocio tipo;
 
     private String iban;
 

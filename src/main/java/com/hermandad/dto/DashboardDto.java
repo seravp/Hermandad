@@ -7,7 +7,11 @@ import java.math.BigDecimal;
 @Data
 public class DashboardDto {
 
+    private Long totalSocios;
+
     private Long totalHermanos;
+
+    private Long totalCostaleros;
 
     private Long cuotasPagadas;
 

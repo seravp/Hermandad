@@ -19,17 +19,18 @@ public class CuotaMapper {
         dto.setEstado(cuota.getEstado());
         dto.setFechaPago(cuota.getFechaPago());
         dto.setObservaciones(cuota.getObservaciones());
+        dto.setTipo(cuota.getTipo());
 
-        dto.setHermanoId(
-                cuota.getHermano().getId());
+        dto.setSocioId(
+                cuota.getSocio().getId());
 
-        dto.setNumeroHermano(
-                cuota.getHermano()
-                        .getNumeroHermano());
+        dto.setNumeroSocio(
+                cuota.getSocio()
+                        .getNumeroSocio());
 
-        dto.setNombreHermano(
-                cuota.getHermano().getNombre() + " " +
-                        cuota.getHermano().getApellidos());
+        dto.setNombreSocio(
+                cuota.getSocio().getNombre() + " " +
+                        cuota.getSocio().getApellidos());
 
         return dto;
     }
@@ -42,6 +43,7 @@ public class CuotaMapper {
         cuota.setAnio(dto.getAnio());
         cuota.setImporte(dto.getImporte());
         cuota.setObservaciones(dto.getObservaciones());
+        cuota.setTipo(dto.getTipo());
 
         return cuota;
     }

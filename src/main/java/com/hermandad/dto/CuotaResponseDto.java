@@ -1,6 +1,7 @@
 package com.hermandad.dto;
 
 import com.hermandad.entity.EstadoCuota;
+import com.hermandad.entity.TipoSocio;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -21,9 +22,11 @@ public class CuotaResponseDto {
 
     private String observaciones;
 
-    private Long hermanoId;
+    private Long socioId;
 
-    private Integer numeroHermano;
+    private Integer numeroSocio;
 
-    private String nombreHermano;
+    private String nombreSocio;
+
+    private TipoSocio tipo;
 }

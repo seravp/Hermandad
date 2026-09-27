@@ -19,7 +19,9 @@ public class ConfiguracionDto {
 
     private String email;
 
-    private BigDecimal importeCuota;
+    private BigDecimal importeCuotaHermano;
+
+    private BigDecimal importeCuotaCostalero;
 
     private Integer anioActivo;
 

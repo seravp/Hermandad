@@ -24,7 +24,7 @@ public class OpenApiConfig {
                                         "Gestión Hermandad API")
                                 .version("1.0")
                                 .description(
-                                        "API de gestión de hermanos, cuotas y usuarios"))
+                                        "API de gestión de socios, cuotas y usuarios"))
 
                 .addSecurityItem(
                         new SecurityRequirement()
