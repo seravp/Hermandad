@@ -5,6 +5,7 @@ target/
 
 logs/
 *.log
+uploads/
 
 src/main/resources/application-local.properties
 

@@ -10,6 +10,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import com.hermandad.service.ImagenInventarioService;
 
 import java.util.List;
 
@@ -19,10 +24,13 @@ public class InventarioController {
 
     private final InventarioService inventarioService;
     private final InventarioMapper inventarioMapper;
+    private final ImagenInventarioService imagenInventarioService;
 
-    public InventarioController(InventarioService inventarioService, InventarioMapper inventarioMapper) {
+    public InventarioController(InventarioService inventarioService, InventarioMapper inventarioMapper,
+                                ImagenInventarioService imagenInventarioService) {
         this.inventarioService = inventarioService;
         this.inventarioMapper = inventarioMapper;
+        this.imagenInventarioService = imagenInventarioService;
     }
 
     @GetMapping
@@ -60,6 +68,19 @@ public class InventarioController {
     @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
     public InventarioResponseDto cambiarActivo(@PathVariable Long id, @RequestParam boolean activo) {
         return inventarioMapper.toResponse(inventarioService.cambiarActivo(id, activo));
+    }
+
+    @PostMapping(value = "/{id}/imagen", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    public InventarioResponseDto subirImagen(@PathVariable Long id, @RequestParam("archivo") MultipartFile archivo) {
+        return inventarioMapper.toResponse(inventarioService.guardarImagen(id, archivo));
+    }
+
+    @GetMapping("/imagenes/{nombre:.+}")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO','CONSULTA')")
+    public ResponseEntity<Resource> imagen(@PathVariable String nombre) {
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(imagenInventarioService.tipoContenido(nombre)))
+                .body(imagenInventarioService.cargar(nombre));
     }
 
     @GetMapping("/revisiones")
@@ -105,5 +126,11 @@ public class InventarioController {
                 inventarioService.totalDetalles(id),
                 inventarioService.totalVerificados(id),
                 inventarioService.totalIncidencias(id));
+    }
+
+    @DeleteMapping("/revisiones/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void eliminarRevision(@PathVariable Long id) {
+        inventarioService.eliminarRevision(id);
     }
 }

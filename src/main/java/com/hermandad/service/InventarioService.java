@@ -26,18 +26,21 @@ public class InventarioService {
     private final RevisionInventarioDetalleRepository detalleRepository;
     private final InventarioMapper inventarioMapper;
     private final AuditoriaService auditoriaService;
+    private final ImagenInventarioService imagenInventarioService;
 
     public InventarioService(
             ElementoInventarioRepository elementoRepository,
             RevisionInventarioRepository revisionRepository,
             RevisionInventarioDetalleRepository detalleRepository,
             InventarioMapper inventarioMapper,
-            AuditoriaService auditoriaService) {
+            AuditoriaService auditoriaService,
+            ImagenInventarioService imagenInventarioService) {
         this.elementoRepository = elementoRepository;
         this.revisionRepository = revisionRepository;
         this.detalleRepository = detalleRepository;
         this.inventarioMapper = inventarioMapper;
         this.auditoriaService = auditoriaService;
+        this.imagenInventarioService = imagenInventarioService;
     }
 
     public Page<ElementoInventario> buscar(String texto, String categoria,
@@ -85,6 +88,15 @@ public class InventarioService {
         elemento.setActivo(activo);
         ElementoInventario guardado = elementoRepository.save(elemento);
         auditoriaService.registrar(activo ? "ACTIVAR" : "DESACTIVAR", "INVENTARIO", id);
+        return guardado;
+    }
+
+    @Transactional
+    public ElementoInventario guardarImagen(Long id, org.springframework.web.multipart.MultipartFile archivo) {
+        ElementoInventario elemento = obtenerElemento(id);
+        elemento.setImagenUrl(imagenInventarioService.guardar(archivo));
+        ElementoInventario guardado = elementoRepository.save(elemento);
+        auditoriaService.registrar("SUBIR_IMAGEN", "INVENTARIO", id);
         return guardado;
     }
 
@@ -158,6 +170,14 @@ public class InventarioService {
         RevisionInventario guardada = revisionRepository.save(revision);
         auditoriaService.registrar("CERRAR", "REVISION_INVENTARIO", id);
         return guardada;
+    }
+
+    @Transactional
+    public void eliminarRevision(Long id) {
+        RevisionInventario revision = obtenerRevision(id);
+        detalleRepository.findByRevisionIdOrderByElementoCodigoAsc(id).forEach(detalleRepository::delete);
+        revisionRepository.delete(revision);
+        auditoriaService.registrar("ELIMINAR", "REVISION_INVENTARIO", id);
     }
 
     public long totalDetalles(Long revisionId) {

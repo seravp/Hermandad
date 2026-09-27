@@ -37,6 +37,7 @@ public class InventarioMapper {
         dto.setValorAdquisicion(elemento.getValorAdquisicion());
         dto.setActivo(elemento.getActivo());
         dto.setObservaciones(elemento.getObservaciones());
+        dto.setImagenUrl(elemento.getImagenUrl());
         return dto;
     }
 

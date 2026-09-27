@@ -19,4 +19,5 @@ public class InventarioResponseDto {
     private BigDecimal valorAdquisicion;
     private Boolean activo;
     private String observaciones;
+    private String imagenUrl;
 }

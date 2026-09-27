@@ -44,4 +44,6 @@ public class ElementoInventario {
 
     @Column(length = 2000)
     private String observaciones;
+
+    private String imagenUrl;
 }
