@@ -20,6 +20,9 @@ public class HermanoMapper {
         hermano.setDireccion(dto.getDireccion());
         hermano.setFechaNacimiento(dto.getFechaNacimiento());
         hermano.setEstado(dto.getEstado());
+        hermano.setIban(dto.getIban());
+        hermano.setTitularCuenta(dto.getTitularCuenta());
+        hermano.setFormaPago(dto.getFormaPago());
 
         return hermano;
     }
@@ -41,6 +44,9 @@ public class HermanoMapper {
         dto.setEstado(hermano.getEstado());
         dto.setFechaCreacion(hermano.getFechaCreacion());
         dto.setFechaModificacion(hermano.getFechaModificacion());
+        dto.setIban(hermano.getIban());
+        dto.setTitularCuenta(hermano.getTitularCuenta());
+        dto.setFormaPago(hermano.getFormaPago());
 
         return dto;
     }

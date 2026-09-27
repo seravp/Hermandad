@@ -6,5 +6,7 @@ target/
 logs/
 *.log
 
+src/main/resources/application-local.properties
+
 .DS_Store
 Thumbs.db

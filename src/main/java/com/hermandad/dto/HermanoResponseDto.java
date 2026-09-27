@@ -1,6 +1,7 @@
 package com.hermandad.dto;
 
 import com.hermandad.entity.EstadoHermano;
+import com.hermandad.entity.FormaPago;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,6 +49,12 @@ public class HermanoResponseDto {
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaModificacion;
+
+    private String iban;
+
+    private String titularCuenta;
+
+    private FormaPago formaPago;
 }
 
 

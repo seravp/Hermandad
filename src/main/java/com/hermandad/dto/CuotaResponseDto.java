@@ -24,4 +24,6 @@ public class CuotaResponseDto {
     private Long hermanoId;
 
     private Integer numeroHermano;
+
+    private String nombreHermano;
 }
