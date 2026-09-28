@@ -49,6 +49,10 @@ public class SocioResponseDto {
 
     private TipoSocio tipo;
 
+    private String cuadrilla;
+
+    private Integer posicionCuadrilla;
+
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaModificacion;

@@ -50,6 +50,11 @@ public class Socio {
     @Column(nullable = false)
     private TipoSocio tipo;
 
+    @Column(length = 120)
+    private String cuadrilla;
+
+    private Integer posicionCuadrilla;
+
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaModificacion;

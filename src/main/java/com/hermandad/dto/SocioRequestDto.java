@@ -34,6 +34,8 @@ public class SocioRequestDto {
 
     private TipoSocio tipo;
 
+    private String cuadrilla;
+
     private String iban;
 
     private String titularCuenta;

@@ -37,13 +37,13 @@ public class CuotaController {
     }
 
     @GetMapping("/exportar-excel")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
-    public ResponseEntity<byte[]> exportarExcel(@RequestParam(required=false) String texto, @RequestParam(required=false) EstadoCuota estado, @RequestParam(required=false) Integer anio, @RequestParam(required=false) TipoSocio tipo) throws Exception {
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=cuotas.xlsx").contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(excelService.exportarCuotas(cuotaService.buscarPaginado(texto, estado, anio, tipo, 0, 10000, "anio", "asc").getContent()));
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
+    public ResponseEntity<byte[]> exportarExcel(@RequestParam(required=false) String texto, @RequestParam(required=false) EstadoCuota estado, @RequestParam(required=false) Integer anio, @RequestParam(required=false) TipoSocio tipo, @RequestParam(required=false) String cuadrilla) throws Exception {
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=cuotas.xlsx").contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(excelService.exportarCuotas(cuotaService.buscarPaginado(texto, estado, anio, tipo, cuadrilla, 0, 10000, "anio", "asc").getContent()));
     }
 
     @GetMapping("/socio/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public List<CuotaResponseDto> obtenerPorSocio(
             @PathVariable Long id) {
 
@@ -55,7 +55,7 @@ public class CuotaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("@cuotaPermissionService.puedeGestionarSocio(#dto.socioId)")
     public CuotaResponseDto crear(
             @RequestBody CuotaRequestDto dto) {
 
@@ -81,7 +81,7 @@ public class CuotaController {
     }
 
     @PutMapping("/{id}/pagar")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("@cuotaPermissionService.puedeGestionarPorId(#id)")
     public CuotaResponseDto pagar(
             @PathVariable Long id) {
 
@@ -91,7 +91,7 @@ public class CuotaController {
     }
 
     @PutMapping("/{id}/anular")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("@cuotaPermissionService.puedeGestionarPorId(#id)")
     public CuotaResponseDto anular(
             @PathVariable Long id) {
 
@@ -101,7 +101,7 @@ public class CuotaController {
     }
 
     @PutMapping("/{id}/deshacerPago")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("@cuotaPermissionService.puedeGestionarPorId(#id)")
     public CuotaResponseDto deshacerPago(
             @PathVariable Long id) {
 
@@ -111,7 +111,7 @@ public class CuotaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("@cuotaPermissionService.puedeGestionarPorId(#id)")
     public CuotaResponseDto actualizar(
             @PathVariable Long id,
             @Valid @RequestBody CuotaRequestDto dto) {
@@ -123,7 +123,7 @@ public class CuotaController {
     }
 
     @GetMapping("/pendientes")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public List<CuotaResponseDto> pendientes() {
 
         return cuotaService
@@ -134,14 +134,14 @@ public class CuotaController {
     }
 
     @GetMapping("/resumen")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public ResumenCuotasDto resumen() {
 
         return cuotaService.obtenerResumen();
     }
 
     @GetMapping("/morosos")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
     public List<MorosoDto> morosos(
             @RequestParam(required = false)
             Integer anio) {
@@ -150,14 +150,14 @@ public class CuotaController {
     }
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public DashboardDto dashboard() {
 
         return cuotaService.obtenerDashboard();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public CuotaResponseDto obtenerPorId(
             @PathVariable Long id) {
 
@@ -166,7 +166,7 @@ public class CuotaController {
     }
 
     @GetMapping("/paginado")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public Page<CuotaResponseDto> obtenerPaginadas(
 
             @RequestParam(defaultValue = "0")
@@ -191,7 +191,7 @@ public class CuotaController {
     }
 
     @GetMapping("/busqueda-paginada")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public Page<CuotaResponseDto> buscarPaginado(
 
             @RequestParam(required = false)
@@ -205,6 +205,9 @@ public class CuotaController {
 
             @RequestParam(required = false)
             TipoSocio tipo,
+
+            @RequestParam(required = false)
+            String cuadrilla,
 
             @RequestParam(defaultValue = "0")
             int page,
@@ -223,7 +226,8 @@ public class CuotaController {
                         texto,
                         estado,
                         anio,
-                tipo,
+                        tipo,
+                        cuadrilla,
                         page,
                         size,
                         sort,
@@ -232,7 +236,7 @@ public class CuotaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO')")
+    @PreAuthorize("@cuotaPermissionService.puedeGestionarPorId(#id)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
 
@@ -240,7 +244,7 @@ public class CuotaController {
     }
 
     @GetMapping("/anios")
-    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public List<Integer> obtenerAniosDisponibles() {
         return cuotaService.obtenerAniosDisponibles();
     }

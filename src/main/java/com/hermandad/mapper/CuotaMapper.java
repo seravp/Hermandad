@@ -20,6 +20,7 @@ public class CuotaMapper {
         dto.setFechaPago(cuota.getFechaPago());
         dto.setObservaciones(cuota.getObservaciones());
         dto.setTipo(cuota.getTipo());
+        dto.setCuadrilla(cuota.getSocio().getCuadrilla());
 
         dto.setSocioId(
                 cuota.getSocio().getId());

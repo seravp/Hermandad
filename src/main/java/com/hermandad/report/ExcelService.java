@@ -33,6 +33,21 @@ public class ExcelService {
         return exportarSocios(socioService.obtenerTodos());
     }
 
+    public byte[] plantillaImportacionSocios() throws Exception {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Socios");
+            String[] cabeceras = {"Nombre", "Apellidos", "DNI", "Teléfono", "Email", "Dirección", "Fecha nacimiento", "Estado", "Tipo", "Cuadrilla", "Forma de pago", "IBAN", "Titular cuenta"};
+            Row cabecera = sheet.createRow(0);
+            for (int i = 0; i < cabeceras.length; i++) {
+                cabecera.createCell(i).setCellValue(cabeceras[i]);
+                sheet.autoSizeColumn(i);
+            }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            return baos.toByteArray();
+        }
+    }
+
     public byte[] exportarSocios(List<Socio> socios)
             throws Exception {
 
@@ -61,14 +76,15 @@ public class ExcelService {
             cabecera.createCell(4)
                     .setCellValue("Estado");
             cabecera.createCell(5).setCellValue("Tipo");
-            cabecera.createCell(6).setCellValue("Teléfono");
-            cabecera.createCell(7).setCellValue("Email");
-            cabecera.createCell(8).setCellValue("Dirección");
-            cabecera.createCell(9).setCellValue("Fecha nacimiento");
-            cabecera.createCell(10).setCellValue("Fecha alta");
-            cabecera.createCell(11).setCellValue("Forma de pago");
-            cabecera.createCell(12).setCellValue("IBAN");
-            cabecera.createCell(13).setCellValue("Titular cuenta");
+            cabecera.createCell(6).setCellValue("Cuadrilla");
+            cabecera.createCell(7).setCellValue("Teléfono");
+            cabecera.createCell(8).setCellValue("Email");
+            cabecera.createCell(9).setCellValue("Dirección");
+            cabecera.createCell(10).setCellValue("Fecha nacimiento");
+            cabecera.createCell(11).setCellValue("Fecha alta");
+            cabecera.createCell(12).setCellValue("Forma de pago");
+            cabecera.createCell(13).setCellValue("IBAN");
+            cabecera.createCell(14).setCellValue("Titular cuenta");
 
             int fila = 1;
 
@@ -101,17 +117,18 @@ public class ExcelService {
                                         ? socio.getEstado().name()
                                         : "");
                 row.createCell(5).setCellValue(socio.getTipo() != null ? socio.getTipo().name() : "");
-                row.createCell(6).setCellValue(socio.getTelefono() != null ? socio.getTelefono() : "");
-                row.createCell(7).setCellValue(socio.getEmail() != null ? socio.getEmail() : "");
-                row.createCell(8).setCellValue(socio.getDireccion() != null ? socio.getDireccion() : "");
-                row.createCell(9).setCellValue(socio.getFechaNacimiento() != null ? socio.getFechaNacimiento().toString() : "");
-                row.createCell(10).setCellValue(socio.getFechaAlta() != null ? socio.getFechaAlta().toString() : "");
-                row.createCell(11).setCellValue(socio.getFormaPago() != null ? socio.getFormaPago().name() : "");
-                row.createCell(12).setCellValue(socio.getIban() != null ? socio.getIban() : "");
-                row.createCell(13).setCellValue(socio.getTitularCuenta() != null ? socio.getTitularCuenta() : "");
+                row.createCell(6).setCellValue(socio.getCuadrilla() != null ? socio.getCuadrilla() : "");
+                row.createCell(7).setCellValue(socio.getTelefono() != null ? socio.getTelefono() : "");
+                row.createCell(8).setCellValue(socio.getEmail() != null ? socio.getEmail() : "");
+                row.createCell(9).setCellValue(socio.getDireccion() != null ? socio.getDireccion() : "");
+                row.createCell(10).setCellValue(socio.getFechaNacimiento() != null ? socio.getFechaNacimiento().toString() : "");
+                row.createCell(11).setCellValue(socio.getFechaAlta() != null ? socio.getFechaAlta().toString() : "");
+                row.createCell(12).setCellValue(socio.getFormaPago() != null ? socio.getFormaPago().name() : "");
+                row.createCell(13).setCellValue(socio.getIban() != null ? socio.getIban() : "");
+                row.createCell(14).setCellValue(socio.getTitularCuenta() != null ? socio.getTitularCuenta() : "");
             }
 
-            for (int i = 0; i < 14; i++) {
+            for (int i = 0; i < 15; i++) {
                 sheet.autoSizeColumn(i);
             }
 
@@ -256,6 +273,9 @@ public class ExcelService {
             cabecera.createCell(5)
                     .setCellValue("Fecha Pago");
 
+            cabecera.createCell(6)
+                    .setCellValue("Cuadrilla");
+
             int fila = 1;
 
             for (Cuota cuota : cuotas) {
@@ -290,9 +310,14 @@ public class ExcelService {
                                 cuota.getFechaPago() != null
                                         ? cuota.getFechaPago().toString()
                                         : "");
+
+                row.createCell(6)
+                        .setCellValue(cuota.getSocio().getCuadrilla() != null
+                                ? cuota.getSocio().getCuadrilla()
+                                : "");
             }
 
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 7; i++) {
                 sheet.autoSizeColumn(i);
             }
 

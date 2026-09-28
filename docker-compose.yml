@@ -1,36 +1,48 @@
-version: '3.9'
-
 services:
-
   postgres:
     image: postgres:17
-
     container_name: hermandad-postgres
-
     environment:
       POSTGRES_DB: Hermandad
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin17
-
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin17}
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Hermandad"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build: .
-
     container_name: hermandad-backend
-
     depends_on:
-      - postgres
-
+      postgres:
+        condition: service_healthy
     ports:
-      - "8081:8081"
-
+      - "8082:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_NAME: Hermandad
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-admin17}
+      JPA_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-cambia-esta-clave-local-por-una-segura-de-al-menos-32-caracteres}
+      CORS_ALLOWED_ORIGIN: http://localhost:4200
+
+  frontend:
+    build: ../frontend
+    container_name: hermandad-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
 
 volumes:
   postgres_data:

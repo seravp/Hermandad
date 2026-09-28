@@ -8,6 +8,8 @@ import com.hermandad.report.ExcelService;
 
 import com.hermandad.dto.SocioRequestDto;
 import com.hermandad.dto.SocioResponseDto;
+import com.hermandad.dto.ImportacionSociosResponseDto;
+import com.hermandad.dto.PosicionCuadrillaRequestDto;
 import com.hermandad.mapper.SocioMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,10 +47,11 @@ public class SocioController {
     @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
     public ResponseEntity<byte[]> exportarExcel(@RequestParam(required = false) String texto,
                                                 @RequestParam(required = false) EstadoSocio estado,
-                                                @RequestParam(required = false) TipoSocio tipo) throws Exception {
+                                                @RequestParam(required = false) TipoSocio tipo,
+                                                @RequestParam(required = false) String cuadrilla) throws Exception {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=socios.xlsx")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(excelService.exportarSocios(socioService.buscarPaginado(texto, estado, tipo, 0, 10000, "numeroSocio", "asc").getContent()));
+                .body(excelService.exportarSocios(socioService.buscarPaginado(texto, estado, tipo, cuadrilla, 0, 10000, "numeroSocio", "asc").getContent()));
     }
 
     @Operation(summary = "Obtener todos los socios")
@@ -143,6 +147,9 @@ public class SocioController {
             @RequestParam(required = false)
             TipoSocio tipo,
 
+            @RequestParam(required = false)
+            String cuadrilla,
+
             @RequestParam(defaultValue = "0")
             int page,
 
@@ -160,6 +167,7 @@ public class SocioController {
                         texto,
                         estado,
                         tipo,
+                        cuadrilla,
                         page,
                         size,
                         sort,
@@ -179,7 +187,7 @@ public class SocioController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public SocioResponseDto crear(
             @Valid @RequestBody SocioRequestDto dto) {
 
@@ -190,8 +198,26 @@ public class SocioController {
         return socioMapper.toResponse(guardado);
     }
 
+    @PostMapping(value = "/importar-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ImportacionSociosResponseDto importarExcel(@RequestParam("archivo") MultipartFile archivo) throws Exception {
+        if (archivo.isEmpty()) {
+            throw new IllegalArgumentException("Selecciona un archivo Excel con los socios a importar.");
+        }
+        return socioService.importarExcel(archivo.getInputStream());
+    }
+
+    @GetMapping("/importar-excel/plantilla")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> descargarPlantillaImportacion() throws Exception {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=plantilla-importacion-socios.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelService.plantillaImportacionSocios());
+    }
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public SocioResponseDto actualizar(
             @PathVariable Long id,
             @Valid @RequestBody SocioRequestDto dto) {
@@ -204,8 +230,22 @@ public class SocioController {
         return socioMapper.toResponse(actualizado);
     }
 
+    @PutMapping("/{id}/posicion-cuadrilla")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
+    public SocioResponseDto asignarPosicionCuadrilla(
+            @PathVariable Long id,
+            @Valid @RequestBody PosicionCuadrillaRequestDto dto) {
+        return socioMapper.toResponse(socioService.asignarPosicionCuadrilla(id, dto.posicion()));
+    }
+
+    @DeleteMapping("/{id}/posicion-cuadrilla")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
+    public SocioResponseDto liberarPosicionCuadrilla(@PathVariable Long id) {
+        return socioMapper.toResponse(socioService.liberarPosicionCuadrilla(id));
+    }
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO')")
     public void eliminar(@PathVariable Long id) {
 
         socioService.eliminar(id);

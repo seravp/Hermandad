@@ -514,6 +514,7 @@ public class CuotaService {
             EstadoCuota estado,
             Integer anio,
             TipoSocio tipo,
+            String cuadrilla,
             int page,
             int size,
             String sort,
@@ -550,6 +551,7 @@ public class CuotaService {
                 estado,
                 anio,
                 tipo,
+                cuadrilla,
                 pageable);
     }
 

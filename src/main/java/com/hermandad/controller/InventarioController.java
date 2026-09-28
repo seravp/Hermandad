@@ -72,25 +72,25 @@ public class InventarioController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public InventarioResponseDto crear(@Valid @RequestBody InventarioRequestDto dto) {
         return inventarioMapper.toResponse(inventarioService.crearElemento(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public InventarioResponseDto actualizar(@PathVariable Long id, @Valid @RequestBody InventarioRequestDto dto) {
         return inventarioMapper.toResponse(inventarioService.actualizarElemento(id, dto));
     }
 
     @PutMapping("/{id}/activo")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public InventarioResponseDto cambiarActivo(@PathVariable Long id, @RequestParam boolean activo) {
         return inventarioMapper.toResponse(inventarioService.cambiarActivo(id, activo));
     }
 
     @PostMapping(value = "/{id}/imagen", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public InventarioResponseDto subirImagen(@PathVariable Long id, @RequestParam("archivo") MultipartFile archivo) {
         return inventarioMapper.toResponse(inventarioService.guardarImagen(id, archivo));
     }
@@ -103,7 +103,7 @@ public class InventarioController {
     }
 
     @GetMapping("/revisiones")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public List<RevisionInventarioResponseDto> revisiones() {
         return inventarioService.obtenerRevisiones().stream()
                 .map(revision -> inventarioMapper.toRevisionResponse(revision,
@@ -114,7 +114,7 @@ public class InventarioController {
     }
 
     @PostMapping("/revisiones")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public RevisionInventarioResponseDto crearRevision(@Valid @RequestBody RevisionInventarioRequestDto dto) {
         var revision = inventarioService.crearRevision(dto);
         return inventarioMapper.toRevisionResponse(revision,
@@ -122,7 +122,7 @@ public class InventarioController {
     }
 
     @GetMapping("/revisiones/{id}/detalles")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO','CONSULTA')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public List<RevisionInventarioDetalleResponseDto> detalles(@PathVariable Long id) {
         return inventarioService.obtenerDetalles(id).stream()
                 .map(inventarioMapper::toDetalleResponse)
@@ -130,7 +130,7 @@ public class InventarioController {
     }
 
     @PutMapping("/revisiones/detalles/{detalleId}")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public RevisionInventarioDetalleResponseDto actualizarDetalle(
             @PathVariable Long detalleId,
             @Valid @RequestBody RevisionInventarioDetalleRequestDto dto) {
@@ -138,7 +138,7 @@ public class InventarioController {
     }
 
     @PutMapping("/revisiones/{id}/cerrar")
-    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public RevisionInventarioResponseDto cerrarRevision(@PathVariable Long id) {
         var revision = inventarioService.cerrarRevision(id);
         return inventarioMapper.toRevisionResponse(revision,
@@ -148,7 +148,7 @@ public class InventarioController {
     }
 
     @DeleteMapping("/revisiones/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO')")
     public void eliminarRevision(@PathVariable Long id) {
         inventarioService.eliminarRevision(id);
     }

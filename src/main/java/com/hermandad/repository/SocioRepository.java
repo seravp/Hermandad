@@ -24,6 +24,10 @@ public interface SocioRepository extends JpaRepository<Socio, Long> {
 
     List<Socio> findByFormaPago(FormaPago formaPago);
 
+    Optional<Socio> findByCuadrillaAndPosicionCuadrilla(String cuadrilla, Integer posicionCuadrilla);
+
+    boolean existsByCuadrillaAndPosicionCuadrillaGreaterThan(String cuadrilla, Integer posicionCuadrilla);
+
     @Query("SELECT COALESCE(MAX(h.numeroSocio), 0) FROM Socio h")
     Integer obtenerUltimoNumeroSocio();
 
@@ -42,11 +46,14 @@ public interface SocioRepository extends JpaRepository<Socio, Long> {
         (:estado IS NULL OR h.estado = :estado)
     AND
         (:tipo IS NULL OR h.tipo = :tipo)
+    AND
+        (:cuadrilla IS NULL OR h.cuadrilla = :cuadrilla)
 """)
     Page<Socio> buscar(
             @Param("texto") String texto,
             @Param("estado") EstadoSocio estado,
             @Param("tipo") TipoSocio tipo,
+            @Param("cuadrilla") String cuadrilla,
             Pageable pageable);
 
     long countByEstado(EstadoSocio estado);

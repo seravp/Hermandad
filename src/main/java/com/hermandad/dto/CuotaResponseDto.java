@@ -29,4 +29,6 @@ public class CuotaResponseDto {
     private String nombreSocio;
 
     private TipoSocio tipo;
+
+    private String cuadrilla;
 }

@@ -25,7 +25,9 @@ public class CorsConfig {
                 new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of(allowedOrigin));
+                List.of(
+                        allowedOrigin,
+                        "http://192.168.1.151:4200"));
 
         configuration.setAllowedMethods(
                 List.of(

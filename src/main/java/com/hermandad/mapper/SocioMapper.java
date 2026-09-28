@@ -21,6 +21,7 @@ public class SocioMapper {
         socio.setFechaNacimiento(dto.getFechaNacimiento());
         socio.setEstado(dto.getEstado());
         socio.setTipo(dto.getTipo());
+        socio.setCuadrilla(dto.getCuadrilla());
         socio.setIban(dto.getIban());
         socio.setTitularCuenta(dto.getTitularCuenta());
         socio.setFormaPago(dto.getFormaPago());
@@ -44,6 +45,8 @@ public class SocioMapper {
         dto.setFechaAlta(socio.getFechaAlta());
         dto.setEstado(socio.getEstado());
         dto.setTipo(socio.getTipo());
+        dto.setCuadrilla(socio.getCuadrilla());
+        dto.setPosicionCuadrilla(socio.getPosicionCuadrilla());
         dto.setFechaCreacion(socio.getFechaCreacion());
         dto.setFechaModificacion(socio.getFechaModificacion());
         dto.setIban(socio.getIban());

@@ -51,12 +51,14 @@ public interface CuotaRepository
     AND (:estado IS NULL OR c.estado = :estado)
     AND (:anio IS NULL OR c.anio = :anio)
     AND (:tipo IS NULL OR c.tipo = :tipo)
+    AND (:cuadrilla IS NULL OR h.cuadrilla = :cuadrilla)
     """)
     Page<Cuota> buscar(
             @Param("texto") String texto,
             @Param("estado") EstadoCuota estado,
             @Param("anio") Integer anio,
             @Param("tipo") TipoSocio tipo,
+            @Param("cuadrilla") String cuadrilla,
             Pageable pageable);
 
     @Query("""

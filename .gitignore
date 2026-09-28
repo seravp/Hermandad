@@ -5,6 +5,12 @@ target/
 
 logs/
 *.log
+
+# Copia local de datos para inicializar PostgreSQL en Docker.
+database/init/*.sql
+
+# Copia local de datos para inicializar PostgreSQL en Docker.
+database/init/*.sql
 uploads/
 
 src/main/resources/application-local.properties
