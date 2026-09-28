@@ -3,6 +3,7 @@ package com.hermandad.controller;
 import com.hermandad.dto.*;
 import com.hermandad.entity.EstadoInventario;
 import com.hermandad.mapper.InventarioMapper;
+import com.hermandad.report.ExcelService;
 import com.hermandad.service.InventarioService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import com.hermandad.service.ImagenInventarioService;
 
@@ -25,12 +27,29 @@ public class InventarioController {
     private final InventarioService inventarioService;
     private final InventarioMapper inventarioMapper;
     private final ImagenInventarioService imagenInventarioService;
+    private final ExcelService excelService;
 
     public InventarioController(InventarioService inventarioService, InventarioMapper inventarioMapper,
-                                ImagenInventarioService imagenInventarioService) {
+                                ImagenInventarioService imagenInventarioService,
+                                ExcelService excelService) {
         this.inventarioService = inventarioService;
         this.inventarioMapper = inventarioMapper;
         this.imagenInventarioService = imagenInventarioService;
+        this.excelService = excelService;
+    }
+
+    @GetMapping("/exportar-excel")
+    @PreAuthorize("hasAnyRole('ADMIN','SECRETARIO','TESORERO','CONSULTA')")
+    public ResponseEntity<byte[]> exportarExcel(
+            @RequestParam(defaultValue = "") String texto,
+            @RequestParam(defaultValue = "") String categoria,
+            @RequestParam(required = false) EstadoInventario estado) throws Exception {
+        var elementos = inventarioService.buscar(texto, categoria, estado,
+                PageRequest.of(0, 10000, Sort.by("codigo").ascending())).getContent();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=inventario.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelService.exportarInventario(elementos));
     }
 
     @GetMapping

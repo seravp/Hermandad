@@ -4,6 +4,7 @@ import com.hermandad.entity.EstadoSocio;
 import com.hermandad.entity.Socio;
 import com.hermandad.entity.TipoSocio;
 import com.hermandad.service.SocioService;
+import com.hermandad.report.ExcelService;
 
 import com.hermandad.dto.SocioRequestDto;
 import com.hermandad.dto.SocioResponseDto;
@@ -15,6 +16,9 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 
@@ -24,13 +28,26 @@ import java.util.List;
 public class SocioController {
     private final SocioMapper socioMapper;
     private final SocioService socioService;
+    private final ExcelService excelService;
 
     public SocioController(
             SocioService socioService,
-            SocioMapper socioMapper) {
+            SocioMapper socioMapper,
+            ExcelService excelService) {
 
         this.socioService = socioService;
         this.socioMapper = socioMapper;
+        this.excelService = excelService;
+    }
+
+    @GetMapping("/exportar-excel")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','SECRETARIO','CONSULTA')")
+    public ResponseEntity<byte[]> exportarExcel(@RequestParam(required = false) String texto,
+                                                @RequestParam(required = false) EstadoSocio estado,
+                                                @RequestParam(required = false) TipoSocio tipo) throws Exception {
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=socios.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelService.exportarSocios(socioService.buscarPaginado(texto, estado, tipo, 0, 10000, "numeroSocio", "asc").getContent()));
     }
 
     @Operation(summary = "Obtener todos los socios")

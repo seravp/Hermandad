@@ -2,6 +2,7 @@ package com.hermandad.report;
 
 import com.hermandad.dto.MorosoDto;
 import com.hermandad.entity.Cuota;
+import com.hermandad.entity.ElementoInventario;
 import com.hermandad.entity.Socio;
 import com.hermandad.service.CuotaService;
 import com.hermandad.service.SocioService;
@@ -29,9 +30,11 @@ public class ExcelService {
 
     public byte[] exportarSocios()
             throws Exception {
+        return exportarSocios(socioService.obtenerTodos());
+    }
 
-        List<Socio> socios =
-                socioService.obtenerTodos();
+    public byte[] exportarSocios(List<Socio> socios)
+            throws Exception {
 
         try (Workbook workbook =
                      new XSSFWorkbook()) {
@@ -57,6 +60,15 @@ public class ExcelService {
 
             cabecera.createCell(4)
                     .setCellValue("Estado");
+            cabecera.createCell(5).setCellValue("Tipo");
+            cabecera.createCell(6).setCellValue("Teléfono");
+            cabecera.createCell(7).setCellValue("Email");
+            cabecera.createCell(8).setCellValue("Dirección");
+            cabecera.createCell(9).setCellValue("Fecha nacimiento");
+            cabecera.createCell(10).setCellValue("Fecha alta");
+            cabecera.createCell(11).setCellValue("Forma de pago");
+            cabecera.createCell(12).setCellValue("IBAN");
+            cabecera.createCell(13).setCellValue("Titular cuenta");
 
             int fila = 1;
 
@@ -88,9 +100,18 @@ public class ExcelService {
                                 socio.getEstado() != null
                                         ? socio.getEstado().name()
                                         : "");
+                row.createCell(5).setCellValue(socio.getTipo() != null ? socio.getTipo().name() : "");
+                row.createCell(6).setCellValue(socio.getTelefono() != null ? socio.getTelefono() : "");
+                row.createCell(7).setCellValue(socio.getEmail() != null ? socio.getEmail() : "");
+                row.createCell(8).setCellValue(socio.getDireccion() != null ? socio.getDireccion() : "");
+                row.createCell(9).setCellValue(socio.getFechaNacimiento() != null ? socio.getFechaNacimiento().toString() : "");
+                row.createCell(10).setCellValue(socio.getFechaAlta() != null ? socio.getFechaAlta().toString() : "");
+                row.createCell(11).setCellValue(socio.getFormaPago() != null ? socio.getFormaPago().name() : "");
+                row.createCell(12).setCellValue(socio.getIban() != null ? socio.getIban() : "");
+                row.createCell(13).setCellValue(socio.getTitularCuenta() != null ? socio.getTitularCuenta() : "");
             }
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 14; i++) {
                 sheet.autoSizeColumn(i);
             }
 
@@ -169,11 +190,44 @@ public class ExcelService {
         }
     }
 
+    public byte[] exportarInventario(List<ElementoInventario> elementos) throws Exception {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Inventario");
+            String[] cabeceras = {"Código", "Nombre", "Categoría", "Ubicación", "Estado", "Fecha de adquisición", "Valor de adquisición", "Activo", "Descripción", "Observaciones", "Imagen"};
+            Row cabecera = sheet.createRow(0);
+            for (int i = 0; i < cabeceras.length; i++) {
+                cabecera.createCell(i).setCellValue(cabeceras[i]);
+            }
+
+            int fila = 1;
+            for (ElementoInventario elemento : elementos) {
+                Row row = sheet.createRow(fila++);
+                row.createCell(0).setCellValue(elemento.getCodigo() != null ? elemento.getCodigo() : "");
+                row.createCell(1).setCellValue(elemento.getNombre() != null ? elemento.getNombre() : "");
+                row.createCell(2).setCellValue(elemento.getCategoria() != null ? elemento.getCategoria() : "");
+                row.createCell(3).setCellValue(elemento.getUbicacion() != null ? elemento.getUbicacion() : "");
+                row.createCell(4).setCellValue(elemento.getEstado() != null ? elemento.getEstado().name() : "");
+                row.createCell(5).setCellValue(elemento.getFechaAdquisicion() != null ? elemento.getFechaAdquisicion().toString() : "");
+                row.createCell(6).setCellValue(elemento.getValorAdquisicion() != null ? elemento.getValorAdquisicion().doubleValue() : 0);
+                row.createCell(7).setCellValue(Boolean.TRUE.equals(elemento.getActivo()) ? "Sí" : "No");
+                row.createCell(8).setCellValue(elemento.getDescripcion() != null ? elemento.getDescripcion() : "");
+                row.createCell(9).setCellValue(elemento.getObservaciones() != null ? elemento.getObservaciones() : "");
+                row.createCell(10).setCellValue(elemento.getImagenUrl() != null ? elemento.getImagenUrl() : "");
+            }
+            for (int i = 0; i < cabeceras.length; i++) sheet.autoSizeColumn(i);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            return baos.toByteArray();
+        }
+    }
+
     public byte[] exportarCuotas()
             throws Exception {
+        return exportarCuotas(cuotaService.obtenerTodas());
+    }
 
-        List<Cuota> cuotas =
-                cuotaService.obtenerTodas();
+    public byte[] exportarCuotas(List<Cuota> cuotas)
+            throws Exception {
 
         try (Workbook workbook =
                      new XSSFWorkbook()) {

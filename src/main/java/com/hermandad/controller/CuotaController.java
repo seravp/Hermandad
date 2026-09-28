@@ -6,6 +6,10 @@ import com.hermandad.entity.EstadoCuota;
 import com.hermandad.entity.TipoSocio;
 import com.hermandad.mapper.CuotaMapper;
 import com.hermandad.service.CuotaService;
+import com.hermandad.report.ExcelService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,13 +24,22 @@ public class CuotaController {
 
     private final CuotaService cuotaService;
     private final CuotaMapper cuotaMapper;
+    private final ExcelService excelService;
 
     public CuotaController(
             CuotaService cuotaService,
-            CuotaMapper cuotaMapper) {
+            CuotaMapper cuotaMapper,
+            ExcelService excelService) {
 
         this.cuotaService = cuotaService;
         this.cuotaMapper = cuotaMapper;
+        this.excelService = excelService;
+    }
+
+    @GetMapping("/exportar-excel")
+    @PreAuthorize("hasAnyRole('ADMIN','TESORERO','CONSULTA')")
+    public ResponseEntity<byte[]> exportarExcel(@RequestParam(required=false) String texto, @RequestParam(required=false) EstadoCuota estado, @RequestParam(required=false) Integer anio, @RequestParam(required=false) TipoSocio tipo) throws Exception {
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=cuotas.xlsx").contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).body(excelService.exportarCuotas(cuotaService.buscarPaginado(texto, estado, anio, tipo, 0, 10000, "anio", "asc").getContent()));
     }
 
     @GetMapping("/socio/{id}")
