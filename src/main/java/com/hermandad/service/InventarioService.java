@@ -136,6 +136,7 @@ public class InventarioService {
                 .orElseThrow(() -> new BusinessException("La revisión de inventario no existe."));
     }
 
+    @Transactional(readOnly = true)
     public List<RevisionInventarioDetalle> obtenerDetalles(Long revisionId) {
         obtenerRevision(revisionId);
         return detalleRepository.findByRevisionIdOrderByElementoCodigoAsc(revisionId);

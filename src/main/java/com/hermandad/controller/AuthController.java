@@ -3,6 +3,7 @@ package com.hermandad.controller;
 import com.hermandad.dto.LoginRequest;
 import com.hermandad.dto.LoginResponse;
 import com.hermandad.security.JwtService;
+import com.hermandad.security.AuthenticatedUser;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -46,8 +47,8 @@ public class AuthController {
                 .orElseThrow();
 
         String token = jwtService.generateToken(
-                authentication.getName());
+                (AuthenticatedUser) authentication.getPrincipal());
 
-        return new LoginResponse(token, rol);
+        return new LoginResponse(token, rol, authentication.getName());
     }
 }

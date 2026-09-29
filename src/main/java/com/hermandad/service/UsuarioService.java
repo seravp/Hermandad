@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.nio.charset.StandardCharsets;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,6 +37,20 @@ public class UsuarioService {
                 auditoriaService;
     }
 
+    private Usuario obtenerParaModificar(Long id) {
+        return usuarioRepository.findByIdForUpdate(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    }
+
+    private void validarPassword(String password) {
+        if (password == null || password.isBlank()
+                || password.codePointCount(0, password.length()) < 12
+                || password.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La contraseña debe tener al menos 12 caracteres y como máximo 72 bytes UTF-8");
+        }
+    }
+
     public List<Usuario> obtenerTodos() {
 
         return usuarioRepository.findAll();
@@ -51,16 +67,12 @@ public class UsuarioService {
                                 "Usuario no encontrado"));
     }
 
+    @Transactional
     public Usuario guardar(
             Usuario usuario) {
 
-        if (usuario.getPassword() == null
-                || usuario.getPassword().isBlank()) {
+        validarPassword(usuario.getPassword());
 
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La contraseña es obligatoria al crear un usuario");
-        }
 
         if (usuarioRepository.existsByUsername(
                 usuario.getUsername())) {
@@ -86,11 +98,13 @@ public class UsuarioService {
     }
 
 
+    @Transactional
     public Usuario actualizar(
             Long id,
             Usuario usuarioActualizado) {
 
-        Usuario usuario = obtenerPorId(id);
+        usuarioRepository.lockAdministradores(Rol.ADMIN);
+        Usuario usuario = obtenerParaModificar(id);
 
         if (!usuario.getUsername().equals(
                 usuarioActualizado.getUsername())
@@ -108,14 +122,22 @@ public class UsuarioService {
 
         boolean desactivaAdministrador =
                 usuario.getRol() == Rol.ADMIN
-                        && Boolean.FALSE.equals(
+                        && !Boolean.TRUE.equals(
                         usuarioActualizado.getActivo());
 
         if ((dejaDeSerAdministrador || desactivaAdministrador)
-                && usuarioRepository.countByRol(Rol.ADMIN) <= 1) {
+                && Boolean.TRUE.equals(usuario.getActivo())
+                && usuarioRepository.countByRolAndActivoTrue(Rol.ADMIN) <= 1) {
 
-            throw new RuntimeException(
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "No se puede desactivar ni quitar el rol al último administrador");
+        }
+
+        String nuevaPassword = usuarioActualizado.getPassword();
+        boolean cambiaPassword = nuevaPassword != null && !nuevaPassword.isEmpty();
+        if (cambiaPassword) {
+            validarPassword(nuevaPassword);
+            usuario.setPassword(passwordEncoder.encode(nuevaPassword));
         }
 
         usuario.setUsername(
@@ -124,6 +146,9 @@ public class UsuarioService {
         usuario.setRol(
                 usuarioActualizado.getRol());
 
+        if (cambiaPassword || !java.util.Objects.equals(usuario.getActivo(), usuarioActualizado.getActivo())) {
+            usuario.setTokenVersion(usuario.getTokenVersion() + 1);
+        }
         usuario.setActivo(
                 usuarioActualizado.getActivo());
 
@@ -138,16 +163,16 @@ public class UsuarioService {
         return actualizado;
     }
 
+    @Transactional
     public Usuario cambiarPassword(
             Long id,
             String password) {
 
-        Usuario usuario =
-                obtenerPorId(id);
+        Usuario usuario = obtenerParaModificar(id);
 
-        usuario.setPassword(
-                passwordEncoder.encode(
-                        password));
+        validarPassword(password);
+        usuario.setPassword(passwordEncoder.encode(password));
+        usuario.setTokenVersion(usuario.getTokenVersion() + 1);
 
         Usuario actualizado =
                 usuarioRepository.save(usuario);
@@ -160,13 +185,15 @@ public class UsuarioService {
         return actualizado;
     }
 
+    @Transactional
     public void eliminar(Long id) {
+        usuarioRepository.lockAdministradores(Rol.ADMIN);
 
-        Usuario usuario =
-                obtenerPorId(id);
+        Usuario usuario = obtenerParaModificar(id);
 
         if (usuario.getRol() == Rol.ADMIN
-                && usuarioRepository.countByRol(
+                && Boolean.TRUE.equals(usuario.getActivo())
+                && usuarioRepository.countByRolAndActivoTrue(
                 Rol.ADMIN) <= 1) {
 
             throw new ResponseStatusException(

@@ -21,4 +21,7 @@ public class Usuario {
     private Rol rol;
 
     private Boolean activo = true;
+
+    @Column(nullable = false)
+    private long tokenVersion = 0;
 }
